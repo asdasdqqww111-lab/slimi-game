@@ -1,0 +1,32 @@
+# Godot 4+ specific ignores
+.godot/
+.import/
+
+# Exported builds and binary artifacts
+build/
+exports/
+*.apk
+*.aab
+*.ap_
+*.pck
+*.zip
+*.exe
+*.dmg
+*.x86_64
+
+# Android custom build & signing secrets (NEVER commit credentials/keystores)
+android/
+*.keystore
+*.jks
+*.pem
+*.pk8
+export_credentials.cfg
+local.properties
+
+# OS / Editor temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.swp
+*~
