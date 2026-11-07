@@ -1,0 +1,384 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="1_hud"]
+[ext_resource type="Theme" path="res://resources/ui_pastel_theme.tres" id="2_theme"]
+
+[node name="GameHUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_direction = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 22
+
+[node name="MainLayout" type="VBoxContainer" parent="SafeMargin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="TopBar" type="HBoxContainer" parent="SafeMargin/MainLayout"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="IdentityCard" type="PanelContainer" parent="SafeMargin/MainLayout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IdentityVBox" type="VBoxContainer" parent="SafeMargin/MainLayout/TopBar/IdentityCard"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleRow" type="HBoxContainer" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox/TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "سلايمي"
+
+[node name="FPSLabel" type="Label" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox/TitleRow"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.52, 0.32, 0.48, 1)
+theme_override_font_sizes/font_size = 15
+text = "60 FPS"
+
+[node name="MoodLabel" type="Label" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.25, 0.45, 1)
+theme_override_font_sizes/font_size = 17
+text = "سعيد ومشرق"
+
+[node name="StatsCard" type="PanelContainer" parent="SafeMargin/MainLayout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatsGrid" type="GridContainer" parent="SafeMargin/MainLayout/TopBar/StatsCard"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 5
+columns = 2
+
+[node name="LblHappiness" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "السعادة"
+
+[node name="BarHappiness" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+custom_minimum_size = Vector2(92, 14)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 82.0
+show_percentage = false
+
+[node name="LblEnergy" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "الطاقة"
+
+[node name="BarEnergy" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+custom_minimum_size = Vector2(92, 14)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 86.0
+show_percentage = false
+
+[node name="LblFullness" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "الشبع"
+
+[node name="BarFullness" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+custom_minimum_size = Vector2(92, 14)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 78.0
+show_percentage = false
+
+[node name="LblBond" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "الألفة"
+
+[node name="BarBond" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+custom_minimum_size = Vector2(92, 14)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 25.0
+show_percentage = false
+
+[node name="UtilityButtons" type="VBoxContainer" parent="SafeMargin/MainLayout/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnMemory" type="Button" parent="SafeMargin/MainLayout/TopBar/UtilityButtons"]
+custom_minimum_size = Vector2(96, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "الذاكرة"
+
+[node name="BtnSettings" type="Button" parent="SafeMargin/MainLayout/TopBar/UtilityButtons"]
+custom_minimum_size = Vector2(96, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "الإعدادات"
+
+[node name="CenterArea" type="Control" parent="SafeMargin/MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="BubblePanel" type="PanelContainer" parent="SafeMargin/MainLayout/CenterArea"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -210.0
+offset_top = 8.0
+offset_right = 210.0
+offset_bottom = 78.0
+grow_horizontal = 2
+pivot_offset = Vector2(210, 35)
+mouse_filter = 2
+
+[node name="BubbleLabel" type="Label" parent="SafeMargin/MainLayout/CenterArea/BubblePanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "مرحباً! أنا سلايمي!"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BottomSection" type="VBoxContainer" parent="SafeMargin/MainLayout"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="HintLabel" type="Label" parent="SafeMargin/MainLayout/BottomSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.28, 0.42, 0.88)
+theme_override_font_sizes/font_size = 14
+text = "المس سلايمي، امسح عليه، اسحبه بلطف، أو انقر على الأرض لينتقل إليها"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ActionDock" type="PanelContainer" parent="SafeMargin/MainLayout/BottomSection"]
+layout_mode = 2
+
+[node name="DockRow" type="HBoxContainer" parent="SafeMargin/MainLayout/BottomSection/ActionDock"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="BtnFeed" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "إطعام"
+
+[node name="BtnPlay" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "لعب"
+
+[node name="BtnNap" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "غفوة"
+
+[node name="BtnCall" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "مناداة"
+
+[node name="SettingsModal" type="ColorRect" parent="."]
+visible = false
+layout_direction = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+color = Color(0.18, 0.1, 0.2, 0.46)
+
+[node name="Card" type="PanelContainer" parent="SettingsModal"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -245.0
+offset_top = -285.0
+offset_right = 245.0
+offset_bottom = 285.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="SettingsModal/Card"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SettingsTitle" type="Label" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "إعدادات اللعبة والجودة"
+horizontal_alignment = 1
+
+[node name="QualityLabel" type="Label" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+text = "جودة الرسوميات"
+
+[node name="QualityRow" type="HBoxContainer" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BtnLow" type="Button" parent="SettingsModal/Card/VBox/QualityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "منخفضة"
+
+[node name="BtnMedium" type="Button" parent="SettingsModal/Card/VBox/QualityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "متوسطة"
+
+[node name="BtnHigh" type="Button" parent="SettingsModal/Card/VBox/QualityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "عالية"
+
+[node name="LblMasterVol" type="Label" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+text = "الصوت العام"
+
+[node name="SliderMaster" type="HSlider" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+max_value = 1.0
+step = 0.05
+value = 0.9
+
+[node name="LblSfxVol" type="Label" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+text = "المؤثرات والأصوات"
+
+[node name="SliderSfx" type="HSlider" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+max_value = 1.0
+step = 0.05
+value = 0.9
+
+[node name="ChkAmbient" type="CheckButton" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+button_pressed = true
+text = "موسيقى الغرفة الهادئة"
+
+[node name="ChkBattery" type="CheckButton" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+text = "توفير البطارية (30 إطار/ث)"
+
+[node name="ChkHaptics" type="CheckButton" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+button_pressed = true
+text = "اهتزاز اللمس اللطيف"
+
+[node name="ChkFps" type="CheckButton" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+text = "إظهار عدّاد الأداء (FPS)"
+
+[node name="BtnLang" type="Button" parent="SettingsModal/Card/VBox"]
+layout_mode = 2
+text = "اللغة: العربية"
+
+[node name="BtnCloseSettings" type="Button" parent="SettingsModal/Card/VBox"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "إغلاق"
+
+[node name="MemoryModal" type="ColorRect" parent="."]
+visible = false
+layout_direction = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+color = Color(0.18, 0.1, 0.2, 0.46)
+
+[node name="Card" type="PanelContainer" parent="MemoryModal"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -235.0
+offset_top = -220.0
+offset_right = 235.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="MemoryModal/Card"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MemoryTitle" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "ذاكرة سلايمي معك"
+horizontal_alignment = 1
+
+[node name="MemSessions" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+text = "عدد الزيارات: 1"
+
+[node name="MemPokes" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+text = "اللمسات المرحة: 0"
+
+[node name="MemPets" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+text = "المسحات الحنونة: 0"
+
+[node name="MemFeeds" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+text = "وجبات الحلوى: 0"
+
+[node name="MemPlays" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+text = "مرات اللعب: 0"
+
+[node name="MemBond" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+text = "مستوى العلاقة: صديق جديد"
+
+[node name="MemFav" type="Label" parent="MemoryModal/Card/VBox"]
+layout_mode = 2
+text = "التفاعل المفضل: المسح الحنون على الرأس"
+
+[node name="BtnCloseMemory" type="Button" parent="MemoryModal/Card/VBox"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "إغلاق"

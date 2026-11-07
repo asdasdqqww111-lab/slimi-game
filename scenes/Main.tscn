@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/environment/CozyRoom.tscn" id="2_room"]
+[ext_resource type="PackedScene" path="res://scenes/slime/Slimi.tscn" id="3_slimi"]
+[ext_resource type="Script" path="res://scripts/interaction/touch_interaction_system.gd" id="4_touch"]
+[ext_resource type="PackedScene" path="res://scenes/ui/GameHUD.tscn" id="5_hud"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="CozyRoom" parent="." instance=ExtResource("2_room")]
+
+[node name="Slimi" parent="." instance=ExtResource("3_slimi")]
+
+[node name="CameraRig" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.971338, 0.237703, 0, -0.237703, 0.971338, 0, 0.56, 0)
+
+[node name="MainCamera3D" type="Camera3D" parent="CameraRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 3.35)
+current = true
+fov = 48.0
+near = 0.08
+far = 40.0
+
+[node name="TouchInteractionSystem" type="Node" parent="."]
+script = ExtResource("4_touch")
+
+[node name="GameHUD" parent="." instance=ExtResource("5_hud")]
