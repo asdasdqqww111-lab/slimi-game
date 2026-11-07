@@ -1,0 +1,24 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://materials/shaders/slime_jelly.gdshader" id="1_shader"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/albedo_top = Color(1, 0.77, 0.87, 1)
+shader_parameter/albedo_bottom = Color(0.95, 0.55, 0.74, 1)
+shader_parameter/subsurface_color = Color(1, 0.46, 0.68, 1)
+shader_parameter/rim_color = Color(1, 0.94, 0.98, 1)
+shader_parameter/mood_tint = Color(1, 1, 1, 1)
+shader_parameter/roughness_val = 0.11
+shader_parameter/specular_val = 0.86
+shader_parameter/subsurface_strength = 0.34
+shader_parameter/rim_strength = 0.62
+shader_parameter/squash_stretch = Vector3(1, 1, 1)
+shader_parameter/jiggle_offset = Vector3(0, 0, 0)
+shader_parameter/poke_local_pos = Vector3(0, 0.2, 0.5)
+shader_parameter/poke_strength = 0.0
+shader_parameter/poke_phase = 0.0
+shader_parameter/breath_phase = 0.0
+shader_parameter/flatten_bottom = 0.18
+shader_parameter/detail_level = 1
