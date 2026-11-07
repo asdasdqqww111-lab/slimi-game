@@ -20,6 +20,7 @@ const PULL_NET_DISTANCE_PX: float = 135.0
 @export var camera: Camera3D
 @export var slime: SlimeController
 @export var room: Node3D
+@export var hud: HUDController
 
 var _active_pointer_id: int = -1
 var _touch_mode: int = TouchMode.NONE
@@ -90,6 +91,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func handle_pointer_down(screen_pos: Vector2) -> void:
+	if hud != null and hud.is_point_blocked_by_ui(screen_pos):
+		_touch_mode = TouchMode.NONE
+		return
+
 	_press_screen_pos = screen_pos
 	_last_screen_pos = screen_pos
 	_press_time_msec = Time.get_ticks_msec()

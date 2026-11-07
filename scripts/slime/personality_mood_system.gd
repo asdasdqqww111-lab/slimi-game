@@ -43,6 +43,7 @@ var _dizzy_timer: float = 0.0
 var _affectionate_timer: float = 0.0
 var _curious_timer: float = 0.0
 var _sync_accum: float = 0.0
+var _persist_accum: float = 0.0
 
 
 func _ready() -> void:
@@ -143,6 +144,11 @@ func _process(delta: float) -> void:
 	if _sync_accum >= 0.4:
 		_sync_accum = 0.0
 		stats_updated.emit(get_stats_snapshot())
+
+	_persist_accum += delta
+	if _persist_accum >= 5.0:
+		_persist_accum = 0.0
+		sync_to_save_manager()
 
 
 func register_poke(now_sec: float) -> Dictionary:
@@ -258,6 +264,10 @@ func _recompute_mood(force_emit: bool) -> void:
 	if force_emit or next_mood != current_mood:
 		current_mood = next_mood
 		mood_changed.emit(current_mood, get_mood_key())
+
+
+func sync_to_save_manager() -> void:
+	_persist_to_save()
 
 
 func _persist_to_save() -> void:

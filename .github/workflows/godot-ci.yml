@@ -7,6 +7,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   GODOT_VERSION: "4.7.2"
   GODOT_RELEASE: "4.7.2-stable"
@@ -26,9 +29,13 @@ jobs:
           unzip -q /tmp/godot/godot.zip -d /tmp/godot
           chmod +x "/tmp/godot/Godot_v${GODOT_RELEASE}_linux.x86_64"
           sudo ln -sf "/tmp/godot/Godot_v${GODOT_RELEASE}_linux.x86_64" /usr/local/bin/godot
+          godot --version
 
       - name: Import Project Headless
         run: godot --headless --import --path .
+
+      - name: Verify Startup Scene Execution
+        run: godot --headless --quit-after 30 --path .
 
       - name: Run SLIMI Automated Test Suite
         run: godot --headless --path . res://tests/TestRunner.tscn
@@ -46,8 +53,15 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
+          cache: "gradle"
 
-      - name: Install Godot & Export Templates
+      - name: Set up Android SDK Platform 36 & Build-Tools 36.1.0
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "${SDKMANAGER}" --licenses >/dev/null || true
+          "${SDKMANAGER}" "platform-tools" "platforms;android-36" "build-tools;36.1.0"
+
+      - name: Install Godot 4.7.2 & Official Export Templates
         run: |
           mkdir -p /tmp/godot ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_RELEASE}/Godot_v${GODOT_RELEASE}_linux.x86_64.zip" -o /tmp/godot/godot.zip
@@ -59,30 +73,74 @@ jobs:
           unzip -q /tmp/godot/templates.tpz -d /tmp/godot/templates
           mv /tmp/godot/templates/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
 
-      - name: Generate Ephemeral Debug Keystore & Configure Godot Editor Settings
+      - name: Install Ephemeral Android Gradle Build Template & Debug Keystore
         run: |
-          mkdir -p /tmp/keystore ~/.config/godot build/android
+          mkdir -p android/build /tmp/keystore ~/.config/godot build/android
+          printf '%s\n' "${GODOT_VERSION}.stable" > android/.build_version
+          printf '\n' > android/build/.gdignore
+          unzip -q ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/android_source.zip -d android/build
+          chmod +x android/build/gradlew
+
           keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android \
             -keystore /tmp/keystore/debug.keystore -storepass android \
             -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
 
-          cat <<EOF > ~/.config/godot/editor_settings-4.7.tres
-          [gd_resource type="EditorSettings" format=3]
-          [resource]
-          export/android/android_sdk_path = "${ANDROID_HOME}"
-          export/android/debug_keystore = "/tmp/keystore/debug.keystore"
-          export/android/debug_keystore_user = "androiddebugkey"
-          export/android/debug_keystore_pass = "android"
-          EOF
+          printf '%s\n' \
+            '[gd_resource type="EditorSettings" format=3]' \
+            '[resource]' \
+            "export/android/android_sdk_path = \"${ANDROID_HOME}\"" \
+            'export/android/debug_keystore = "/tmp/keystore/debug.keystore"' \
+            'export/android/debug_keystore_user = "androiddebugkey"' \
+            'export/android/debug_keystore_pass = "android"' \
+            > ~/.config/godot/editor_settings-4.7.tres
 
       - name: Export Playable Debug APK
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: "/tmp/keystore/debug.keystore"
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: "androiddebugkey"
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: "android"
         run: |
           godot --headless --import --path .
           godot --headless --path . --export-debug "Android" build/android/slimi-debug.apk
-          ls -lh build/android/slimi-debug.apk
+          test -s build/android/slimi-debug.apk
+
+      - name: Verify APK Signature, SDK 26+, ABIs, and Offline Manifest
+        run: |
+          APKSIGNER="${ANDROID_HOME}/build-tools/36.1.0/apksigner"
+          AAPT2="${ANDROID_HOME}/build-tools/36.1.0/aapt2"
+
+          "${APKSIGNER}" verify --verbose build/android/slimi-debug.apk
+          BADGING="$("${AAPT2}" dump badging build/android/slimi-debug.apk)"
+          echo "${BADGING}" | head -n 30
+
+          echo "${BADGING}" | grep -q "package: name='com.slimigame.slimi'"
+          echo "${BADGING}" | grep -q "sdkVersion:'26'"
+          echo "${BADGING}" | grep -q "arm64-v8a"
+          echo "${BADGING}" | grep -q "armeabi-v7a"
+          if echo "${BADGING}" | grep -q "android.permission.INTERNET"; then
+            echo "ERROR: Unexpected INTERNET permission found in APK!"
+            exit 1
+          fi
+
+          APK_BYTES=$(stat -c "%s" build/android/slimi-debug.apk)
+          APK_HUMAN=$(ls -lh build/android/slimi-debug.apk | awk '{print $5}')
+          echo "APK_BYTES=${APK_BYTES}"
+          echo "APK_HUMAN=${APK_HUMAN}"
+          {
+            echo "### SLIMI Android Debug APK Summary"
+            echo "- **File**: \`slimi-debug.apk\`"
+            echo "- **Size**: ${APK_HUMAN} (${APK_BYTES} bytes)"
+            echo "- **Package**: \`com.slimigame.slimi\`"
+            echo "- **Min SDK**: 26 (Android 8.0+)"
+            echo "- **ABIs**: \`arm64-v8a\`, \`armeabi-v7a\`"
+            echo "- **Renderer**: \`gl_compatibility\`"
+            echo "- **Internet Permission**: None (100% Offline)"
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: slimi-android-debug-apk
           path: build/android/slimi-debug.apk
+          if-no-files-found: error
+          retention-days: 30

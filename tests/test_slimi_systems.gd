@@ -57,6 +57,7 @@ func _test_project_and_export_config() -> void:
 	assert_true(err == OK, "ملف export_presets.cfg صالح للقراءة")
 	if err == OK:
 		assert_true(str(cfg.get_value("preset.0", "platform", "")) == "Android", "قالب التصدير يستهدف Android")
+		assert_true(bool(cfg.get_value("preset.0.options", "gradle_build/use_gradle_build", false)), "تفعيل Gradle Build لدعم تخصيص Min SDK رسمياً")
 		assert_true(str(cfg.get_value("preset.0.options", "gradle_build/min_sdk", "")) == "26", "استهداف Android 8.0 (API 26) وما بعده")
 		assert_true(bool(cfg.get_value("preset.0.options", "architectures/arm64-v8a", false)), "دعم معمارية arm64-v8a")
 		assert_true(bool(cfg.get_value("preset.0.options", "architectures/armeabi-v7a", false)), "دعم معمارية armeabi-v7a للأجهزة الاقتصادية")
@@ -112,6 +113,16 @@ func _test_save_and_load_atomic() -> void:
 	assert_true(int(mem_loaded.get("total_pets", 0)) == 27, "استرجاع عدد المسحات من الذاكرة المحلية")
 	assert_approx(float(state_loaded.get("happiness", 0.0)), 91.5, 0.2, "استرجاع مستوى السعادة بدقة")
 
+	# فحص الاستعادة التلقائية من النسخة الاحتياطية (.bak) عند تلف الملف الأساسي
+	SaveManager.save_to_disk(test_path)
+	var corrupt_file := FileAccess.open(test_path, FileAccess.WRITE)
+	if corrupt_file != null:
+		corrupt_file.store_string("{corrupted_json")
+		corrupt_file.flush()
+		corrupt_file = null
+	var recovered_ok: bool = SaveManager.load_from_disk(test_path)
+	assert_true(recovered_ok and int(SaveManager.get_section("memory").get("total_pets", 0)) == 27, "استعادة البيانات تلقائياً من النسخة الاحتياطية عند تلف الملف")
+
 	# تنظيف ملفات الاختبار المؤقتة
 	for suffix in ["", ".bak", ".tmp"]:
 		if FileAccess.file_exists(test_path + suffix):
@@ -140,6 +151,17 @@ func _test_main_scene_and_interactions(tree: SceneTree) -> void:
 	var hud := main_inst.get_node_or_null("GameHUD") as HUDController
 
 	assert_true(slime != null and room != null and touch != null and cam != null and hud != null, "تواجد جميع العقد والأنظمة الرئيسية في المشهد")
+
+	# التحقق من أن شخصية SLIMI مجسمة ثلاثية الأبعاد فعلياً وظاهرة أمام الكاميرا وليست صورة مسطحة
+	var body_aabb: AABB = slime.body_mesh_instance.get_aabb()
+	assert_true(
+		body_aabb.size.x > 0.8 and body_aabb.size.y > 0.8 and body_aabb.size.z > 0.8,
+		"شخصية SLIMI مجسم ثلاثي الأبعاد حقيقي بأبعاد حجمية كاملة (X/Y/Z)"
+	)
+	assert_true(
+		cam.is_position_in_frustum(slime.global_position + Vector3(0.0, 0.5, 0.0)),
+		"ظهور شخصية SLIMI فعلياً داخل مجال رؤية الكاميرا الرئيسية"
+	)
 
 	# فحص التشوه المرن وحفظ الحجم ثلاثي الأبعاد
 	slime.deformer.trigger_poke(Vector3(0.0, 0.1, 0.48), 0.95)
@@ -174,13 +196,28 @@ func _test_main_scene_and_interactions(tree: SceneTree) -> void:
 	touch.handle_pointer_up(slime_screen_pos + Vector2(140.0, -90.0))
 	assert_true(not slime.is_being_dragged, "الارتداد السلس عند إفلات السحب")
 
-	# فحص النقر على أرضية الغرفة للانتقال بالقفز
+	# فحص حجب اللمس ثلاثي الأبعاد عند فتح نوافذ الواجهة (منع تسرّب النقرات خلف الإعدادات)
+	var pokes_modal_check: int = slime.mood_system.memory.total_pokes
+	hud.settings_modal.visible = true
+	touch.handle_pointer_down(slime_screen_pos)
+	touch.handle_pointer_up(slime_screen_pos)
+	assert_true(slime.mood_system.memory.total_pokes == pokes_modal_check, "منع تسرب لمسات الواجهة إلى العالم ثلاثي الأبعاد عند فتح الإعدادات")
+	hud.close_modals()
+
+	# فحص النقر على أرضية الغرفة للانتقال بالقفز وحركة القفز والارتداد الفيزيائي
 	var floor_world := Vector3(-0.85, 0.0, 0.75)
 	var floor_screen: Vector2 = cam.unproject_position(floor_world)
 	touch.handle_pointer_down(floor_screen)
 	touch.handle_pointer_up(floor_screen)
 	var ai := slime.ai_brain as AutonomousBehaviorAI
 	assert_true(ai != null and ai.current_state == AutonomousBehaviorAI.State.WANDER_HOP, "استجابة سلايمي للنقر على أرضية الغرفة والقفز نحوها")
+	assert_true(slime.velocity.y > 1.5, "انطلاق حركة القفز الفيزيائية للأعلى عند الانتقال")
+	for _hop_frame in range(8):
+		await tree.physics_frame
+	assert_true(slime.global_position.y > 0.05, "ارتفاع سلايمي فعلياً في الهواء أثناء قوس القفز المرن")
+	for _land_frame in range(45):
+		await tree.physics_frame
+	assert_true(slime.is_on_floor(), "هبوط سلايمي واستقراره الفيزيائي على أرضية الغرفة")
 
 	# فحص السلوك المستقل عند انخفاض الطاقة (غفوة تلقائية)
 	slime.mood_system.energy = 12.0

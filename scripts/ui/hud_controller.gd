@@ -96,6 +96,19 @@ func has_open_modal() -> bool:
 	return (settings_modal != null and settings_modal.visible) or (memory_modal != null and memory_modal.visible)
 
 
+func is_point_blocked_by_ui(screen_pos: Vector2) -> bool:
+	if has_open_modal():
+		return true
+	var interactive_nodes: Array[Control] = [
+		get_node_or_null("SafeMargin/MainLayout/TopBar/UtilityButtons") as Control,
+		get_node_or_null("SafeMargin/MainLayout/BottomSection/ActionDock") as Control,
+	]
+	for ctrl in interactive_nodes:
+		if ctrl != null and ctrl.visible and ctrl.get_global_rect().has_point(screen_pos):
+			return true
+	return false
+
+
 func close_modals() -> void:
 	if settings_modal != null:
 		settings_modal.visible = false

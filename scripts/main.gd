@@ -40,6 +40,7 @@ func _ready() -> void:
 		touch_system.camera = camera
 		touch_system.slime = slime
 		touch_system.room = room
+		touch_system.hud = hud
 
 	if hud != null and slime != null:
 		hud.bind_slime_systems(slime.mood_system)
@@ -90,6 +91,17 @@ func _on_call_requested() -> void:
 		touch_system.reset_camera_view()
 	if slime != null and camera != null:
 		slime.call_to_front(Vector3(0.0, 0.0, 0.55), camera.global_position)
+
+
+func _notification(what: int) -> void:
+	if what in [
+		NOTIFICATION_APPLICATION_PAUSED,
+		NOTIFICATION_APPLICATION_FOCUS_OUT,
+		NOTIFICATION_WM_CLOSE_REQUEST,
+	]:
+		if slime != null and slime.mood_system != null:
+			slime.mood_system.sync_to_save_manager()
+		SaveManager.save_to_disk()
 
 
 func _on_android_back() -> void:
