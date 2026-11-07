@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SlimePersonalityData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/slime_personality_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name_ar = "سلايمي"
+display_name_en = "SLIMI"
+playfulness = 1.15
+curiosity_bias = 1.1
+sociability = 1.25
+bounciness = 1.1
+happiness_decay_per_min = 1.4
+energy_decay_per_min = 1.1
+fullness_decay_per_min = 1.6
+sleep_energy_recovery_per_min = 14.0
+poke_happiness_gain = 2.5
+pet_happiness_gain = 5.5
+pet_affection_gain = 2.2
+feed_fullness_gain = 24.0
+feed_happiness_gain = 7.0
+play_happiness_gain = 11.0
+play_energy_cost = 6.0
+rapid_poke_dizzy_threshold = 6

@@ -1,0 +1,15 @@
+[gd_resource type="Environment" format=3]
+
+[resource]
+background_mode = 1
+background_color = Color(0.96, 0.92, 0.97, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.99, 0.94, 0.97, 1)
+ambient_light_energy = 0.72
+tonemap_mode = 2
+tonemap_exposure = 1.02
+glow_enabled = false
+ssao_enabled = false
+ssil_enabled = false
+sdfgi_enabled = false
+volumetric_fog_enabled = false
