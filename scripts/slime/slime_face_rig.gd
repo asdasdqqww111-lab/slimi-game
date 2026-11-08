@@ -1,7 +1,7 @@
 class_name SlimeFaceRig
 extends Node3D
-## نظام تعبيرات وجه سلايمي المرجعي عالي الدقة:
-## عيون مجرّية لامعة بنجمة ذهبية، خدود موردة بخطوط /// اللطيفة، وفم تعبيري مفتوح بلسان وردي.
+## نظام تعبيرات وجه سلايمي المرجعي عالي الدقة مع مزامنة الكلام (Lip-Sync) و20 شعوراً:
+## عيون مجرّية لامعة بنجمة ذهبية، حواجب تعبيرية ناعمة، خدود موردة بخطوط ///، وفم ناطق بلسان وردي.
 
 enum FaceExpression {
 	HAPPY = 0,
@@ -20,6 +20,8 @@ var left_iris_group: Node3D
 var right_iris_group: Node3D
 var left_upper_lid: MeshInstance3D
 var right_upper_lid: MeshInstance3D
+var left_brow: MeshInstance3D
+var right_brow: MeshInstance3D
 var left_cheek: MeshInstance3D
 var right_cheek: MeshInstance3D
 var mouth_mesh_instance: MeshInstance3D
@@ -33,8 +35,20 @@ var _blink_countdown: float = 3.2
 var _blink_progress: float = 0.0
 var _is_blinking: bool = false
 var _eye_openness: float = 1.0
+var _emotion_eye_open_override: float = -1.0
+var _emotion_blush_override: float = -1.0
+var _brow_tilt_target_deg: float = 4.0
+var _brow_lift_target: float = 0.0
 var _blush_amount: float = 0.78
+var _cheek_puff_amount: float = 0.0
+var _tongue_blep_active: bool = false
 var _dizzy_phase: float = 0.0
+
+# متغيرات مزامنة النطق الحية (Lip-Sync)
+var is_lip_syncing: bool = false
+var lip_sync_open: float = 0.0
+var lip_sync_wide: float = 1.0
+var lip_sync_brow_pulse: float = 0.0
 
 var _mouth_meshes: Dictionary = {}
 var _left_eye_mat: ShaderMaterial
@@ -42,6 +56,7 @@ var _right_eye_mat: ShaderMaterial
 var _blush_shader_mat: ShaderMaterial
 var _mouth_cavity_mat: StandardMaterial3D
 var _tongue_mat: StandardMaterial3D
+var _brow_mat: StandardMaterial3D
 var _rng := RandomNumberGenerator.new()
 
 
@@ -61,6 +76,7 @@ func _ready() -> void:
 	mouth_mesh_instance = get_node_or_null("Mouth") as MeshInstance3D
 
 	_setup_galaxy_eyes_and_cheeks()
+	_setup_expressive_eyebrows()
 	_prebuild_mouth_and_tongue()
 	set_expression(FaceExpression.HAPPY)
 
@@ -100,6 +116,31 @@ func _setup_galaxy_eyes_and_cheeks() -> void:
 			right_cheek.material_override = _blush_shader_mat
 
 
+func _setup_expressive_eyebrows() -> void:
+	_brow_mat = StandardMaterial3D.new()
+	_brow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_brow_mat.albedo_color = Color(0.68, 0.22, 0.44, 0.92)
+	_brow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+
+	var brow_mesh: ArrayMesh = _build_soft_brow_arc(0.052, 0.012, 0.0085)
+
+	left_brow = MeshInstance3D.new()
+	left_brow.name = "LeftBrow"
+	left_brow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	left_brow.mesh = brow_mesh
+	left_brow.position = Vector3(-0.185, 0.215, 0.032)
+	left_brow.material_override = _brow_mat
+	add_child(left_brow)
+
+	right_brow = MeshInstance3D.new()
+	right_brow.name = "RightBrow"
+	right_brow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	right_brow.mesh = brow_mesh
+	right_brow.position = Vector3(0.185, 0.215, 0.032)
+	right_brow.material_override = _brow_mat
+	add_child(right_brow)
+
+
 func _prebuild_mouth_and_tongue() -> void:
 	_mouth_cavity_mat = StandardMaterial3D.new()
 	_mouth_cavity_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -109,7 +150,6 @@ func _prebuild_mouth_and_tongue() -> void:
 	_tongue_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_tongue_mat.albedo_color = Color(1.0, 0.50, 0.72, 1.0)
 
-	# مجسم الفم المفتوح اللطيف "o" كما في الصورة المرجعية + تعبيرات المزاج
 	var open_cute_o := SphereMesh.new()
 	open_cute_o.radius = 0.044
 	open_cute_o.height = 0.094
@@ -164,9 +204,56 @@ func _prebuild_mouth_and_tongue() -> void:
 
 func set_expression(expr: int) -> void:
 	current_expression = expr
-	if mouth_mesh_instance != null and _mouth_meshes.has(expr):
-		mouth_mesh_instance.mesh = _mouth_meshes[expr]
-		var is_cavity: bool = expr in [
+	_emotion_eye_open_override = -1.0
+	_emotion_blush_override = -1.0
+	_refresh_mouth_mesh()
+
+
+func apply_emotion_profile(profile: Dictionary) -> void:
+	var face_id: int = int(profile.get("face", FaceExpression.HAPPY))
+	current_expression = face_id
+	_emotion_eye_open_override = float(profile.get("eye_open", -1.0))
+	_emotion_blush_override = float(profile.get("blush", -1.0))
+	_brow_tilt_target_deg = float(profile.get("brow_tilt", 4.0))
+	_brow_lift_target = float(profile.get("brow_lift", 0.0))
+	_refresh_mouth_mesh()
+
+
+func set_lip_sync_frame(mouth_open: float, mouth_wide: float, brow_lift: float, speaking: bool) -> void:
+	is_lip_syncing = speaking
+	lip_sync_open = clampf(mouth_open, 0.0, 1.35)
+	lip_sync_wide = clampf(mouth_wide, 0.75, 1.35)
+	lip_sync_brow_pulse = clampf(brow_lift, -0.02, 0.04)
+	_refresh_mouth_mesh()
+
+
+func set_tongue_blep(enabled: bool) -> void:
+	_tongue_blep_active = enabled
+	_refresh_mouth_mesh()
+
+
+func set_cheek_puff(amount: float) -> void:
+	_cheek_puff_amount = clampf(amount, 0.0, 1.0)
+
+
+func _refresh_mouth_mesh() -> void:
+	if mouth_mesh_instance == null:
+		return
+
+	if is_lip_syncing and lip_sync_open > 0.08:
+		mouth_mesh_instance.mesh = _mouth_meshes[FaceExpression.HAPPY]
+		var sy: float = clampf(0.32 + lip_sync_open * 1.18, 0.28, 1.55)
+		var sx: float = clampf(lip_sync_wide * (0.85 + lip_sync_open * 0.25), 0.75, 1.35)
+		mouth_mesh_instance.scale = Vector3(sx, sy, 0.34)
+		if tongue_mesh_instance != null:
+			tongue_mesh_instance.visible = lip_sync_open > 0.24
+			tongue_mesh_instance.position = Vector3(0.0, -0.018, 0.022)
+			tongue_mesh_instance.scale = Vector3(1.05, 0.78, 0.55)
+		return
+
+	if _mouth_meshes.has(current_expression):
+		mouth_mesh_instance.mesh = _mouth_meshes[current_expression]
+		var is_cavity: bool = current_expression in [
 			FaceExpression.HAPPY,
 			FaceExpression.CURIOUS,
 			FaceExpression.HUNGRY,
@@ -176,7 +263,14 @@ func set_expression(expr: int) -> void:
 		]
 		mouth_mesh_instance.scale = Vector3(1.0, 1.05, 0.34) if is_cavity else Vector3.ONE
 		if tongue_mesh_instance != null:
-			tongue_mesh_instance.visible = is_cavity and expr != FaceExpression.SLEEPY
+			if _tongue_blep_active:
+				tongue_mesh_instance.visible = true
+				tongue_mesh_instance.position = Vector3(0.0, -0.036, 0.048)
+				tongue_mesh_instance.scale = Vector3(1.18, 1.35, 0.72)
+			else:
+				tongue_mesh_instance.visible = is_cavity and current_expression != FaceExpression.SLEEPY
+				tongue_mesh_instance.position = Vector3(0.0, -0.018, 0.022)
+				tongue_mesh_instance.scale = Vector3(1.05, 0.78, 0.55)
 
 
 func set_look_direction_local(local_dir: Vector3) -> void:
@@ -239,16 +333,21 @@ func _process(delta: float) -> void:
 			target_blush = 0.95
 			_dizzy_phase += delta * 9.5
 
+	if _emotion_eye_open_override > 0.0:
+		target_open = _emotion_eye_open_override
+	if _emotion_blush_override > 0.0:
+		target_blush = _emotion_blush_override
+
 	var final_open: float = clampf(target_open * (1.0 - blink_factor * 0.92), 0.08, 1.18)
 	_eye_openness = lerpf(_eye_openness, final_open, minf(1.0, delta * 16.0))
 	_blush_amount = lerpf(_blush_amount, target_blush, minf(1.0, delta * 6.0))
 	gaze_local_offset = gaze_local_offset.lerp(_target_gaze, minf(1.0, delta * 10.0))
 
-	_apply_eye_transforms(lid_tilt_deg)
+	_apply_eye_and_brow_transforms(lid_tilt_deg, delta)
 	_apply_blush()
 
 
-func _apply_eye_transforms(lid_tilt_deg: float) -> void:
+func _apply_eye_and_brow_transforms(lid_tilt_deg: float, delta: float) -> void:
 	var base_eye_scale := 1.42
 	if left_eye_pivot != null:
 		left_eye_pivot.scale = Vector3(base_eye_scale, base_eye_scale * _eye_openness, base_eye_scale)
@@ -277,15 +376,35 @@ func _apply_eye_transforms(lid_tilt_deg: float) -> void:
 		right_upper_lid.position.y = lid_y
 		right_upper_lid.rotation_degrees.z = -lid_tilt_deg
 
+	var target_brow_y: float = 0.215 + _brow_lift_target + (lip_sync_brow_pulse if is_lip_syncing else 0.0)
+	var blend: float = minf(1.0, delta * 12.0)
+	if left_brow != null:
+		left_brow.position.y = lerpf(left_brow.position.y, target_brow_y, blend)
+		left_brow.rotation_degrees.z = lerpf(left_brow.rotation_degrees.z, _brow_tilt_target_deg, blend)
+	if right_brow != null:
+		right_brow.position.y = lerpf(right_brow.position.y, target_brow_y, blend)
+		right_brow.rotation_degrees.z = lerpf(right_brow.rotation_degrees.z, -_brow_tilt_target_deg, blend)
+
 
 func _apply_blush() -> void:
 	if _blush_shader_mat != null:
-		_blush_shader_mat.set_shader_parameter("blush_intensity", clampf(_blush_amount, 0.25, 1.25))
-	var cheek_scale: float = 1.18 + _blush_amount * 0.16
+		_blush_shader_mat.set_shader_parameter("blush_intensity", clampf(_blush_amount + _cheek_puff_amount * 0.25, 0.25, 1.35))
+	var cheek_scale: float = 1.18 + _blush_amount * 0.16 + _cheek_puff_amount * 0.42
 	if left_cheek != null:
-		left_cheek.scale = Vector3(cheek_scale, cheek_scale * 0.68, 0.32)
+		left_cheek.scale = Vector3(cheek_scale, cheek_scale * (0.68 + _cheek_puff_amount * 0.24), 0.32 + _cheek_puff_amount * 0.25)
 	if right_cheek != null:
-		right_cheek.scale = Vector3(cheek_scale, cheek_scale * 0.68, 0.32)
+		right_cheek.scale = Vector3(cheek_scale, cheek_scale * (0.68 + _cheek_puff_amount * 0.24), 0.32 + _cheek_puff_amount * 0.25)
+
+
+func _build_soft_brow_arc(half_width: float, arch_height: float, radius: float) -> ArrayMesh:
+	var pts := PackedVector3Array()
+	var steps: int = 10
+	for i in range(steps + 1):
+		var u: float = float(i) / float(steps)
+		var x: float = lerpf(-half_width, half_width, u)
+		var y: float = sin(u * PI) * arch_height
+		pts.append(Vector3(x, y, 0.008))
+	return _extrude_tube_along_points(pts, radius)
 
 
 func _build_cat_mouth(half_width: float, depth: float, radius: float) -> ArrayMesh:

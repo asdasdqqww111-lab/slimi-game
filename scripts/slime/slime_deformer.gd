@@ -15,6 +15,7 @@ var body_mesh_instance: MeshInstance3D
 var face_anchor: Node3D
 var crown_anchor: Node3D
 var antenna_root: Node3D
+var right_feeler: Node3D
 var star_pivot: Node3D
 var beanie_root: Node3D
 var pom_root: Node3D
@@ -28,6 +29,10 @@ var shader_material: ShaderMaterial
 var current_squash_stretch := Vector3.ONE
 var current_jiggle := Vector3.ZERO
 var is_resting_flat: bool = false
+var posture_height_scale: float = 1.0
+var beanie_extra_pos := Vector3.ZERO
+var beanie_extra_rot := Vector3.ZERO
+var antenna_extra_rot := Vector3.ZERO
 
 var _scale_y: float = 1.0
 var _scale_y_vel: float = 0.0
@@ -42,11 +47,13 @@ var _poke_phase: float = 0.0
 var _breath_phase: float = 0.0
 
 var _paw_gesture_timer: float = 0.0
-var _paw_gesture_mode: int = 0 # 0=idle, 1=clap/happy, 2=shy_cheeks, 3=surprised
+var _paw_gesture_mode: int = 0 # 0=idle, 1=clap/happy, 2=shy_cheeks, 3=surprised, 4=kiss_blow, 5=antenna_play
 
 var _base_face_pos := Vector3(0.0, 0.04, 0.52)
 var _base_crown_pos := Vector3(0.0, 0.52, 0.0)
 var _base_antenna_pos := Vector3(-0.185, 0.415, 0.05)
+var _base_right_feeler_pos := Vector3(0.065, 0.455, 0.145)
+var _base_right_feeler_rot := Vector3.ZERO
 var _base_beanie_pos := Vector3(0.185, 0.405, 0.015)
 var _base_beanie_rot := Vector3.ZERO
 var _base_paws_pos := Vector3(0.0, -0.145, 0.545)
@@ -58,6 +65,7 @@ func setup(mesh_inst: MeshInstance3D, face_node: Node3D, crown_node: Node3D, acc
 	crown_anchor = crown_node
 
 	antenna_root = acc_refs.get("antenna_root") as Node3D
+	right_feeler = acc_refs.get("right_feeler") as Node3D
 	star_pivot = acc_refs.get("star_pivot") as Node3D
 	beanie_root = acc_refs.get("beanie_root") as Node3D
 	pom_root = acc_refs.get("pom_root") as Node3D
@@ -72,6 +80,9 @@ func setup(mesh_inst: MeshInstance3D, face_node: Node3D, crown_node: Node3D, acc
 		_base_crown_pos = crown_anchor.position
 	if antenna_root != null:
 		_base_antenna_pos = antenna_root.position
+	if right_feeler != null:
+		_base_right_feeler_pos = right_feeler.position
+		_base_right_feeler_rot = right_feeler.rotation
 	if beanie_root != null:
 		_base_beanie_pos = beanie_root.position
 		_base_beanie_rot = beanie_root.rotation
@@ -120,7 +131,7 @@ func play_paw_gesture(mode: int, duration: float = 1.1) -> void:
 func _process(delta: float) -> void:
 	var dt: float = minf(delta, 0.05)
 
-	_target_scale_y = 0.76 if is_resting_flat else (1.0 + anim_breath_offset)
+	_target_scale_y = 0.76 if is_resting_flat else (posture_height_scale + anim_breath_offset)
 	var breath_mult: float = 0.52 if is_resting_flat else 1.0
 	_breath_phase = fmod(_breath_phase + dt * breath_speed * breath_mult, TAU * 64.0)
 
@@ -230,7 +241,7 @@ func _sync_visuals(dt: float) -> void:
 			_base_crown_pos.z * eff_scale.z
 		) + current_jiggle * 0.94
 
-	# تفاعل قرن النجمة الوردي المرن
+	# تفاعل قرني الاستشعار الشفافين المرنين
 	if antenna_root != null:
 		antenna_root.position = Vector3(
 			_base_antenna_pos.x * eff_scale.x,
@@ -241,6 +252,17 @@ func _sync_visuals(dt: float) -> void:
 			clampf(current_jiggle.z * 1.45, -0.45, 0.45),
 			0.0,
 			sin(_breath_phase * 1.2) * 0.05 + clampf(-current_jiggle.x * 1.65, -0.48, 0.48)
+		) + antenna_extra_rot
+	if right_feeler != null:
+		right_feeler.position = Vector3(
+			_base_right_feeler_pos.x * eff_scale.x,
+			_base_right_feeler_pos.y * eff_scale.y,
+			_base_right_feeler_pos.z * eff_scale.z
+		) + current_jiggle * 0.88
+		right_feeler.rotation = _base_right_feeler_rot + Vector3(
+			clampf(current_jiggle.z * 1.2, -0.35, 0.35),
+			0.0,
+			-sin(_breath_phase * 1.35) * 0.06 - antenna_extra_rot.z * 0.85
 		)
 	if star_pivot != null:
 		star_pivot.rotation.z = deg_to_rad(14.0) + sin(_breath_phase * 1.7) * 0.11 - current_jiggle.x * 1.2
@@ -251,12 +273,12 @@ func _sync_visuals(dt: float) -> void:
 			_base_beanie_pos.x * eff_scale.x,
 			_base_beanie_pos.y * eff_scale.y,
 			_base_beanie_pos.z * eff_scale.z
-		) + current_jiggle * 0.86
+		) + current_jiggle * 0.86 + beanie_extra_pos
 		beanie_root.rotation = _base_beanie_rot + Vector3(
 			clampf(current_jiggle.z * 0.95, -0.28, 0.28),
 			0.0,
 			clampf(-current_jiggle.x * 1.05, -0.30, 0.30)
-		)
+		) + beanie_extra_rot
 	if pom_root != null:
 		pom_root.position.y = 0.275 + absf(_scale_y_vel) * 0.008 + sin(_breath_phase * 2.0) * 0.006
 
@@ -290,6 +312,15 @@ func _sync_visuals(dt: float) -> void:
 				target_r_pos = Vector3(0.175, 0.025, 0.03)
 				target_l_rot_z = deg_to_rad(-8.0)
 				target_r_rot_z = deg_to_rad(8.0)
+			elif _paw_gesture_mode == 4: # إرسال قبلة لطيفة (Blow Kiss)
+				target_l_pos = Vector3(-0.145, 0.02, 0.01)
+				target_r_pos = Vector3(0.035, 0.105, 0.075)
+				target_r_rot_z = deg_to_rad(28.0)
+			elif _paw_gesture_mode == 5: # اللعب بقرون الاستشعار
+				var wave: float = sin(_breath_phase * 4.5) * 0.025
+				target_l_pos = Vector3(-0.165, 0.235 + wave, 0.03)
+				target_r_pos = Vector3(0.135, 0.02, 0.01)
+				target_l_rot_z = deg_to_rad(-42.0)
 
 			var blend: float = minf(1.0, dt * 12.0)
 			left_paw.position = left_paw.position.lerp(target_l_pos, blend)

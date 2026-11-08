@@ -149,22 +149,55 @@ func on_poked(world_hit_pos: Vector3, _world_normal: Vector3) -> void:
 
 func on_petted(world_hit_pos: Vector3, stroke_intensity: float = 1.0) -> void:
 	var local_hit: Vector3 = to_local(world_hit_pos)
+	look_target_world = world_hit_pos
 	if deformer != null:
-		deformer.add_jiggle_impulse(Vector3(local_hit.x * 0.6, 0.0, local_hit.z * 0.6) * stroke_intensity)
+		# يميل الجسم الهلامي بحنان نحو إصبع المستخدم عند المسح اللطيف
+		deformer.add_jiggle_impulse(Vector3(local_hit.x * 0.72, 0.0, maxf(local_hit.z, 0.25) * 0.65) * stroke_intensity)
 		deformer.add_vertical_impulse(-0.35 * stroke_intensity)
 		deformer.play_paw_gesture(2, 0.95)
 
 	if mood_system != null:
 		mood_system.register_pet(clampf(stroke_intensity, 0.25, 1.25))
+	if face_rig != null and mood_system != null and not mood_system.is_sleeping:
+		face_rig.set_expression(SlimeFaceRig.FaceExpression.AFFECTIONATE)
 
 	if _pet_sound_cooldown <= 0.0:
 		_pet_sound_cooldown = 0.62
-		AudioManager.play_voice(&"purr_pet", 0.0, -2.0)
+		AudioManager.play_voice(&"giggle_soft" if stroke_intensity > 0.75 else &"purr_pet", 0.0, -2.0)
 
 	if ai_brain != null and ai_brain.has_method("notify_player_interaction"):
 		ai_brain.call("notify_player_interaction", 4.0)
 
 	slime_interacted.emit(&"pet", world_hit_pos)
+
+
+func on_squished(world_hit_pos: Vector3, strength: float = 1.0) -> void:
+	if deformer != null:
+		deformer.add_vertical_impulse(-3.4 * clampf(strength, 0.5, 1.4))
+		deformer.play_paw_gesture(3, 0.85)
+	if face_rig != null:
+		face_rig.set_expression(SlimeFaceRig.FaceExpression.SURPRISED)
+	AudioManager.play_voice(&"jelly_wobble_soft", 0.06, -1.5)
+	AndroidPlatformManager.trigger_haptic(20)
+	slime_interacted.emit(&"squish", world_hit_pos)
+
+
+func on_startled(world_source_pos: Vector3) -> void:
+	var away_dir := Vector3(global_position.x - world_source_pos.x, 0.0, global_position.z - world_source_pos.z)
+	if away_dir.length_squared() < 0.01:
+		away_dir = Vector3(0.0, 0.0, -1.0)
+	away_dir = away_dir.normalized()
+	if is_on_floor():
+		velocity = Vector3(away_dir.x * 1.65, 2.25, away_dir.z * 1.65)
+	if deformer != null:
+		deformer.posture_height_scale = 0.86
+		deformer.add_vertical_impulse(-1.9)
+		deformer.play_paw_gesture(3, 1.2)
+	if face_rig != null:
+		face_rig.set_expression(SlimeFaceRig.FaceExpression.SURPRISED)
+	AudioManager.play_voice(&"scared_tremble", 0.0, -1.5)
+	AndroidPlatformManager.trigger_haptic(24)
+	slime_interacted.emit(&"startle", world_source_pos)
 
 
 func on_pull_drag(world_drag_delta: Vector3) -> void:

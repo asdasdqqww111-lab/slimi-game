@@ -44,6 +44,36 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 	refs["antenna_root"] = antenna_root
 	refs["star_pivot"] = star_pivot
 
+	# 1b. قرن الاستشعار الهلامي الشفاف الثاني (يطل بلطف من جانب القبعة لتحقيق قرني الاستشعار الشفافين)
+	var right_feeler := Node3D.new()
+	right_feeler.name = "RightFeeler"
+	right_feeler.position = Vector3(0.065, 0.455, 0.145)
+	right_feeler.scale = Vector3(-0.62, 0.62, 0.62)
+	right_feeler.rotation_degrees = Vector3(-12.0, -10.0, -14.0)
+	visual_root.add_child(right_feeler)
+
+	var r_stalk := MeshInstance3D.new()
+	r_stalk.name = "RightFeelerStalk"
+	r_stalk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	r_stalk.mesh = stalk_inst.mesh
+	r_stalk.material_override = jelly_acc_mat
+	right_feeler.add_child(r_stalk)
+
+	var r_bulb := MeshInstance3D.new()
+	r_bulb.name = "RightFeelerTip"
+	r_bulb.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var tip_sphere := SphereMesh.new()
+	tip_sphere.radius = 0.056
+	tip_sphere.height = 0.112
+	tip_sphere.radial_segments = 16
+	tip_sphere.rings = 10
+	r_bulb.mesh = tip_sphere
+	r_bulb.position = Vector3(-0.315, 0.055, 0.055)
+	r_bulb.material_override = jelly_acc_mat
+	right_feeler.add_child(r_bulb)
+
+	refs["right_feeler"] = right_feeler
+
 	# 2. القبعة الصوفية الصفراء المحبوكة المائلة بلطف (أعلى يمين الرأس)
 	var beanie_root := Node3D.new()
 	beanie_root.name = "KnitBeanie"
