@@ -1,5 +1,7 @@
 extends Node
-## مدير تكامل نظام Android والأداء: ملء الشاشة، الحواف الآمنة (Safe Area)، زر الرجوع، الاهتزاز، ومراقبة الإطارات.
+## مدير تكامل نظام Android والأداء:
+## يستخدم عقدة Timer بدلاً من _process كل إطار لتوفير استهلاك المعالج،
+## ويضبط الحواف الآمنة (DisplayServer.get_display_safe_area) بدقة منطقية تناسب شاشة الهاتف.
 
 signal back_requested
 signal safe_area_updated(margins: Dictionary)
@@ -9,8 +11,8 @@ var haptics_enabled: bool = true
 var current_fps: float = 60.0
 var avg_frame_ms: float = 16.6
 var is_app_paused: bool = false
+var monitor_timer: Timer
 
-var _perf_timer: float = 0.0
 var _last_window_size := Vector2i.ZERO
 
 
@@ -18,28 +20,32 @@ func _ready() -> void:
 	var settings: Dictionary = SaveManager.get_section("settings")
 	haptics_enabled = bool(settings.get("haptics_enabled", true))
 
-	# تفعيل ملء الشاشة تلقائياً على الهواتف وعند التشغيل الرسومي الفعلي
 	if DisplayServer.get_name() != "headless":
 		if OS.get_name() == "Android":
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		get_tree().set_quit_on_go_back(false)
 
+	# استخدام Timer بدلاً من _process(delta) لفحص الأداء والحواف الآمنة كل 0.5 ثانية فقط
+	monitor_timer = Timer.new()
+	monitor_timer.name = "PerfSafeAreaTimer"
+	monitor_timer.wait_time = 0.5
+	monitor_timer.autostart = true
+	monitor_timer.timeout.connect(_on_monitor_timer_timeout)
+	add_child(monitor_timer)
 
-func _process(delta: float) -> void:
-	_perf_timer += delta
-	avg_frame_ms = lerpf(avg_frame_ms, delta * 1000.0, 0.1)
-	if _perf_timer >= 0.5:
-		_perf_timer = 0.0
-		current_fps = float(Engine.get_frames_per_second())
-		if current_fps <= 0.0 and delta > 0.0:
-			current_fps = 1.0 / delta
-		performance_updated.emit(current_fps, avg_frame_ms)
 
-		if DisplayServer.get_name() != "headless":
-			var win_size: Vector2i = DisplayServer.window_get_size()
-			if win_size != _last_window_size:
-				_last_window_size = win_size
-				safe_area_updated.emit(get_safe_area_margins())
+func _on_monitor_timer_timeout() -> void:
+	var fps_now: float = float(Engine.get_frames_per_second())
+	if fps_now > 0.0:
+		current_fps = fps_now
+		avg_frame_ms = 1000.0 / maxf(current_fps, 1.0)
+	performance_updated.emit(current_fps, avg_frame_ms)
+
+	if DisplayServer.get_name() != "headless":
+		var win_size: Vector2i = DisplayServer.window_get_size()
+		if win_size != _last_window_size:
+			_last_window_size = win_size
+			safe_area_updated.emit(get_safe_area_margins())
 
 
 func _notification(what: int) -> void:
@@ -69,7 +75,7 @@ func trigger_haptic(duration_ms: int = 16) -> void:
 
 
 func get_safe_area_margins() -> Dictionary:
-	var base := {"left": 16, "top": 16, "right": 16, "bottom": 16}
+	var base := {"left": 14, "top": 14, "right": 14, "bottom": 16}
 	if DisplayServer.get_name() == "headless":
 		return base
 
@@ -78,8 +84,19 @@ func get_safe_area_margins() -> Dictionary:
 	if win_size.x <= 0 or win_size.y <= 0 or safe_rect.size.x <= 0 or safe_rect.size.y <= 0:
 		return base
 
-	base["left"] = maxi(16, safe_rect.position.x)
-	base["top"] = maxi(16, safe_rect.position.y)
-	base["right"] = maxi(16, win_size.x - (safe_rect.position.x + safe_rect.size.x))
-	base["bottom"] = maxi(16, win_size.y - (safe_rect.position.y + safe_rect.size.y))
+	# تحويل البكسلات الفيزيائية للشاشة إلى وحدات الواجهة المنطقية (canvas_items stretch)
+	var vp: Viewport = get_viewport()
+	var vis_size: Vector2 = vp.get_visible_rect().size if vp != null else Vector2(720.0, 1280.0)
+	var scale_x: float = maxf(float(win_size.x) / maxf(vis_size.x, 1.0), 0.5)
+	var scale_y: float = maxf(float(win_size.y) / maxf(vis_size.y, 1.0), 0.5)
+
+	var raw_left: int = int(round(float(safe_rect.position.x) / scale_x))
+	var raw_top: int = int(round(float(safe_rect.position.y) / scale_y))
+	var raw_right: int = int(round(float(win_size.x - (safe_rect.position.x + safe_rect.size.x)) / scale_x))
+	var raw_bottom: int = int(round(float(win_size.y - (safe_rect.position.y + safe_rect.size.y)) / scale_y))
+
+	base["left"] = clampi(maxi(14, raw_left), 14, 64)
+	base["top"] = clampi(maxi(14, raw_top), 14, 72)
+	base["right"] = clampi(maxi(14, raw_right), 14, 64)
+	base["bottom"] = clampi(maxi(16, raw_bottom), 16, 68)
 	return base

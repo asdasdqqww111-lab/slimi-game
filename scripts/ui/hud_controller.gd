@@ -1,21 +1,23 @@
 class_name HUDController
 extends CanvasLayer
-## واجهة المستخدم العربية (RTL) القابلة للتوسع والمصممة لشاشات هواتف Android.
+## واجهة المستخدم الزجاجية (Glassmorphism) العربية (RTL) المحسنة لشاشات الهواتف:
+## تتضمن جذر Full Rect دون أشرطة تمرير، أشرطة TextureProgressBar لامعة، وأيقونات SVG واضحة.
 
 signal feed_requested
 signal play_requested
 signal nap_requested
 signal call_requested
 
+var hud_root: Control
 var root_margin: MarginContainer
 var title_label: Label
 var mood_label: Label
 var fps_label: Label
 
-var bar_happiness: ProgressBar
-var bar_energy: ProgressBar
-var bar_fullness: ProgressBar
-var bar_bond: ProgressBar
+var bar_happiness: TextureProgressBar
+var bar_energy: TextureProgressBar
+var bar_fullness: TextureProgressBar
+var bar_bond: TextureProgressBar
 
 var lbl_happiness: Label
 var lbl_energy: Label
@@ -70,6 +72,7 @@ var _show_fps: bool = false
 
 func _ready() -> void:
 	_bind_nodes()
+	_setup_glossy_texture_progress_bars()
 	_connect_signals()
 
 	var settings: Dictionary = SaveManager.get_section("settings")
@@ -80,6 +83,56 @@ func _ready() -> void:
 	_sync_settings_controls_from_managers()
 	_apply_safe_area(AndroidPlatformManager.get_safe_area_margins())
 	refresh_localization()
+
+
+func _setup_glossy_texture_progress_bars() -> void:
+	var track_tex: ImageTexture = _create_pill_bar_texture(
+		Color(0.92, 0.84, 0.94, 0.88),
+		Color(0.86, 0.76, 0.90, 0.88),
+		false
+	)
+	var bars_cfg: Array[Dictionary] = [
+		{"bar": bar_happiness, "c0": Color(1.0, 0.56, 0.80, 1.0), "c1": Color(0.98, 0.32, 0.66, 1.0)},
+		{"bar": bar_energy, "c0": Color(1.0, 0.86, 0.42, 1.0), "c1": Color(1.0, 0.64, 0.24, 1.0)},
+		{"bar": bar_fullness, "c0": Color(1.0, 0.64, 0.76, 1.0), "c1": Color(0.95, 0.40, 0.60, 1.0)},
+		{"bar": bar_bond, "c0": Color(0.84, 0.58, 1.0, 1.0), "c1": Color(0.64, 0.36, 0.96, 1.0)},
+	]
+	for entry in bars_cfg:
+		var bar: TextureProgressBar = entry["bar"] as TextureProgressBar
+		if bar != null:
+			bar.texture_under = track_tex
+			bar.texture_progress = _create_pill_bar_texture(entry["c0"], entry["c1"], true)
+
+
+func _create_pill_bar_texture(col_start: Color, col_end: Color, with_gloss: bool) -> ImageTexture:
+	var w: int = 96
+	var h: int = 20
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var radius: float = float(h) * 0.5 - 1.0
+	for y in range(h):
+		for x in range(w):
+			var cx: float = clampf(float(x), radius, float(w - 1) - radius)
+			var dist: float = Vector2(float(x) - cx, float(y) - float(h - 1) * 0.5).length()
+			var aa: float = clampf(radius + 0.7 - dist, 0.0, 1.0)
+			if aa <= 0.0:
+				img.set_pixel(x, y, Color(0, 0, 0, 0))
+				continue
+			var u: float = float(x) / float(w - 1)
+			var c: Color = col_start.lerp(col_end, u)
+			if with_gloss and y >= 2 and y <= 6:
+				c = c.lerp(Color(1.0, 1.0, 1.0, c.a), 0.42)
+			c.a *= aa
+			img.set_pixel(x, y, c)
+	return ImageTexture.create_from_image(img)
+
+
+func _animate_button_bounce(btn: Button) -> void:
+	if btn == null:
+		return
+	btn.pivot_offset = btn.size * 0.5
+	var tw: Tween = create_tween()
+	tw.tween_property(btn, "scale", Vector2(0.92, 0.92), 0.06)
+	tw.tween_property(btn, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func bind_slime_systems(mood_sys: PersonalityMoodSystem) -> void:
@@ -100,8 +153,8 @@ func is_point_blocked_by_ui(screen_pos: Vector2) -> bool:
 	if has_open_modal():
 		return true
 	var interactive_nodes: Array[Control] = [
-		get_node_or_null("SafeMargin/MainLayout/TopBar/UtilityButtons") as Control,
-		get_node_or_null("SafeMargin/MainLayout/BottomSection/ActionDock") as Control,
+		get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/UtilityButtons") as Control,
+		get_node_or_null("HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock") as Control,
 	]
 	for ctrl in interactive_nodes:
 		if ctrl != null and ctrl.visible and ctrl.get_global_rect().has_point(screen_pos):
@@ -141,6 +194,8 @@ func show_bubble_text(message: String, duration: float = 3.6) -> void:
 
 
 func refresh_localization() -> void:
+	if hud_root != null:
+		LocalizationManager.apply_rtl_to_control(hud_root)
 	if root_margin != null:
 		LocalizationManager.apply_rtl_to_control(root_margin)
 	if settings_modal != null:
@@ -214,60 +269,61 @@ func refresh_localization() -> void:
 
 
 func _bind_nodes() -> void:
-	root_margin = get_node_or_null("SafeMargin") as MarginContainer
-	title_label = get_node_or_null("SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox/TitleRow/TitleLabel") as Label
-	mood_label = get_node_or_null("SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox/MoodLabel") as Label
-	fps_label = get_node_or_null("SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox/TitleRow/FPSLabel") as Label
+	hud_root = get_node_or_null("HUDRoot") as Control
+	root_margin = get_node_or_null("HUDRoot/SafeMargin") as MarginContainer
+	title_label = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox/IdentityVBox/TitleRow/TitleLabel") as Label
+	mood_label = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox/IdentityVBox/MoodLabel") as Label
+	fps_label = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox/IdentityVBox/TitleRow/FPSLabel") as Label
 
-	bar_happiness = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/BarHappiness") as ProgressBar
-	bar_energy = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/BarEnergy") as ProgressBar
-	bar_fullness = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/BarFullness") as ProgressBar
-	bar_bond = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/BarBond") as ProgressBar
+	bar_happiness = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatHappyRow/BarHappiness") as TextureProgressBar
+	bar_energy = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatEnergyRow/BarEnergy") as TextureProgressBar
+	bar_fullness = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatFullnessRow/BarFullness") as TextureProgressBar
+	bar_bond = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatBondRow/BarBond") as TextureProgressBar
 
-	lbl_happiness = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/LblHappiness") as Label
-	lbl_energy = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/LblEnergy") as Label
-	lbl_fullness = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/LblFullness") as Label
-	lbl_bond = get_node_or_null("SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid/LblBond") as Label
+	lbl_happiness = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatHappyRow/LblHappiness") as Label
+	lbl_energy = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatEnergyRow/LblEnergy") as Label
+	lbl_fullness = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatFullnessRow/LblFullness") as Label
+	lbl_bond = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatBondRow/LblBond") as Label
 
-	btn_memory = get_node_or_null("SafeMargin/MainLayout/TopBar/UtilityButtons/BtnMemory") as Button
-	btn_settings = get_node_or_null("SafeMargin/MainLayout/TopBar/UtilityButtons/BtnSettings") as Button
+	btn_memory = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/UtilityButtons/BtnMemory") as Button
+	btn_settings = get_node_or_null("HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/UtilityButtons/BtnSettings") as Button
 
-	bubble_panel = get_node_or_null("SafeMargin/MainLayout/CenterArea/BubblePanel") as PanelContainer
-	bubble_label = get_node_or_null("SafeMargin/MainLayout/CenterArea/BubblePanel/BubbleLabel") as Label
+	bubble_panel = get_node_or_null("HUDRoot/SafeMargin/MainLayout/CenterArea/BubblePanel") as PanelContainer
+	bubble_label = get_node_or_null("HUDRoot/SafeMargin/MainLayout/CenterArea/BubblePanel/BubbleLabel") as Label
 
-	hint_label = get_node_or_null("SafeMargin/MainLayout/BottomSection/HintLabel") as Label
-	btn_feed = get_node_or_null("SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnFeed") as Button
-	btn_play = get_node_or_null("SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnPlay") as Button
-	btn_nap = get_node_or_null("SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnNap") as Button
-	btn_call = get_node_or_null("SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnCall") as Button
+	hint_label = get_node_or_null("HUDRoot/SafeMargin/MainLayout/BottomSection/HintLabel") as Label
+	btn_feed = get_node_or_null("HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnFeed") as Button
+	btn_play = get_node_or_null("HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnPlay") as Button
+	btn_nap = get_node_or_null("HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnNap") as Button
+	btn_call = get_node_or_null("HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow/BtnCall") as Button
 
-	settings_modal = get_node_or_null("SettingsModal") as ColorRect
-	settings_title_label = get_node_or_null("SettingsModal/Card/VBox/SettingsTitle") as Label
-	quality_title_label = get_node_or_null("SettingsModal/Card/VBox/QualityLabel") as Label
-	btn_q_low = get_node_or_null("SettingsModal/Card/VBox/QualityRow/BtnLow") as Button
-	btn_q_med = get_node_or_null("SettingsModal/Card/VBox/QualityRow/BtnMedium") as Button
-	btn_q_high = get_node_or_null("SettingsModal/Card/VBox/QualityRow/BtnHigh") as Button
-	lbl_vol_master = get_node_or_null("SettingsModal/Card/VBox/LblMasterVol") as Label
-	slider_master = get_node_or_null("SettingsModal/Card/VBox/SliderMaster") as HSlider
-	lbl_vol_sfx = get_node_or_null("SettingsModal/Card/VBox/LblSfxVol") as Label
-	slider_sfx = get_node_or_null("SettingsModal/Card/VBox/SliderSfx") as HSlider
-	chk_ambient = get_node_or_null("SettingsModal/Card/VBox/ChkAmbient") as CheckButton
-	chk_battery = get_node_or_null("SettingsModal/Card/VBox/ChkBattery") as CheckButton
-	chk_haptics = get_node_or_null("SettingsModal/Card/VBox/ChkHaptics") as CheckButton
-	chk_fps = get_node_or_null("SettingsModal/Card/VBox/ChkFps") as CheckButton
-	btn_lang = get_node_or_null("SettingsModal/Card/VBox/BtnLang") as Button
-	btn_close_settings = get_node_or_null("SettingsModal/Card/VBox/BtnCloseSettings") as Button
+	settings_modal = get_node_or_null("HUDRoot/SettingsModal") as ColorRect
+	settings_title_label = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/SettingsTitle") as Label
+	quality_title_label = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/QualityLabel") as Label
+	btn_q_low = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/QualityRow/BtnLow") as Button
+	btn_q_med = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/QualityRow/BtnMedium") as Button
+	btn_q_high = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/QualityRow/BtnHigh") as Button
+	lbl_vol_master = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/LblMasterVol") as Label
+	slider_master = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/SliderMaster") as HSlider
+	lbl_vol_sfx = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/LblSfxVol") as Label
+	slider_sfx = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/SliderSfx") as HSlider
+	chk_ambient = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/ChkAmbient") as CheckButton
+	chk_battery = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/ChkBattery") as CheckButton
+	chk_haptics = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/ChkHaptics") as CheckButton
+	chk_fps = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/ChkFps") as CheckButton
+	btn_lang = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/BtnLang") as Button
+	btn_close_settings = get_node_or_null("HUDRoot/SettingsModal/Card/VBox/BtnCloseSettings") as Button
 
-	memory_modal = get_node_or_null("MemoryModal") as ColorRect
-	memory_title_label = get_node_or_null("MemoryModal/Card/VBox/MemoryTitle") as Label
-	mem_sessions_lbl = get_node_or_null("MemoryModal/Card/VBox/MemSessions") as Label
-	mem_pokes_lbl = get_node_or_null("MemoryModal/Card/VBox/MemPokes") as Label
-	mem_pets_lbl = get_node_or_null("MemoryModal/Card/VBox/MemPets") as Label
-	mem_feeds_lbl = get_node_or_null("MemoryModal/Card/VBox/MemFeeds") as Label
-	mem_plays_lbl = get_node_or_null("MemoryModal/Card/VBox/MemPlays") as Label
-	mem_bond_lbl = get_node_or_null("MemoryModal/Card/VBox/MemBond") as Label
-	mem_fav_lbl = get_node_or_null("MemoryModal/Card/VBox/MemFav") as Label
-	btn_close_memory = get_node_or_null("MemoryModal/Card/VBox/BtnCloseMemory") as Button
+	memory_modal = get_node_or_null("HUDRoot/MemoryModal") as ColorRect
+	memory_title_label = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemoryTitle") as Label
+	mem_sessions_lbl = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemSessions") as Label
+	mem_pokes_lbl = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemPokes") as Label
+	mem_pets_lbl = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemPets") as Label
+	mem_feeds_lbl = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemFeeds") as Label
+	mem_plays_lbl = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemPlays") as Label
+	mem_bond_lbl = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemBond") as Label
+	mem_fav_lbl = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/MemFav") as Label
+	btn_close_memory = get_node_or_null("HUDRoot/MemoryModal/Card/VBox/BtnCloseMemoryBtn") as Button
 
 
 func _connect_signals() -> void:
@@ -278,27 +334,32 @@ func _connect_signals() -> void:
 
 	if btn_feed != null:
 		btn_feed.pressed.connect(func() -> void:
+			_animate_button_bounce(btn_feed)
 			AudioManager.play_sfx(&"ui_click")
 			feed_requested.emit()
 		)
 	if btn_play != null:
 		btn_play.pressed.connect(func() -> void:
+			_animate_button_bounce(btn_play)
 			AudioManager.play_sfx(&"ui_click")
 			play_requested.emit()
 		)
 	if btn_nap != null:
 		btn_nap.pressed.connect(func() -> void:
+			_animate_button_bounce(btn_nap)
 			AudioManager.play_sfx(&"ui_click")
 			nap_requested.emit()
 		)
 	if btn_call != null:
 		btn_call.pressed.connect(func() -> void:
+			_animate_button_bounce(btn_call)
 			AudioManager.play_sfx(&"ui_click")
 			call_requested.emit()
 		)
 
 	if btn_settings != null:
 		btn_settings.pressed.connect(func() -> void:
+			_animate_button_bounce(btn_settings)
 			AudioManager.play_sfx(&"ui_click")
 			if memory_modal != null:
 				memory_modal.visible = false
@@ -307,6 +368,7 @@ func _connect_signals() -> void:
 		)
 	if btn_memory != null:
 		btn_memory.pressed.connect(func() -> void:
+			_animate_button_bounce(btn_memory)
 			AudioManager.play_sfx(&"ui_click")
 			_refresh_memory_labels()
 			if settings_modal != null:
@@ -457,9 +519,9 @@ func _refresh_memory_labels() -> void:
 func _apply_safe_area(margins: Dictionary) -> void:
 	if root_margin == null:
 		return
-	root_margin.add_theme_constant_override("margin_left", int(margins.get("left", 16)))
-	root_margin.add_theme_constant_override("margin_top", int(margins.get("top", 16)))
-	root_margin.add_theme_constant_override("margin_right", int(margins.get("right", 16)))
+	root_margin.add_theme_constant_override("margin_left", int(margins.get("left", 14)))
+	root_margin.add_theme_constant_override("margin_top", int(margins.get("top", 14)))
+	root_margin.add_theme_constant_override("margin_right", int(margins.get("right", 14)))
 	root_margin.add_theme_constant_override("margin_bottom", int(margins.get("bottom", 16)))
 
 

@@ -170,6 +170,22 @@ func _test_main_scene_and_interactions(tree: SceneTree) -> void:
 	var volume: float = ss.x * ss.y * ss.z
 	assert_approx(volume, 1.0, 0.08, "حفظ الحجم الهلامي أثناء التشوه والارتداد (Volume Preservation)")
 	assert_true(slime.face_rig.mouth_mesh_instance.mesh != null, "توليد مجسم الفم التعبيري ثلاثي الأبعاد")
+	assert_true(slime.face_rig.tongue_mesh_instance != null, "تواجد اللسان الوردي داخل الفم التعبيري كما في الصورة المرجعية")
+
+	# فحص عناصر تصميم سلايمي المطابقة للصورة المرجعية (قرن النجمة، القبعة الصوفية، الكفان الهلاميان، الفقاعات، والتنفس)
+	var vis_root := slime.get_node_or_null("VisualRoot") as Node3D
+	assert_true(vis_root.get_node_or_null("StarAntenna/StarCharmPivot/StarCharmMesh") != null, "تواجد قرن النجمة الوردي اللامع أعلى يسار الرأس")
+	assert_true(vis_root.get_node_or_null("KnitBeanie/PomPom") != null and vis_root.get_node_or_null("KnitBeanie/YarnFlower") != null and vis_root.get_node_or_null("KnitBeanie/HeartPin") != null, "تواجد القبعة الصوفية الصفراء مع الكرة البيضاء والوردة الملونة ودبوس القلب")
+	assert_true(vis_root.get_node_or_null("JellyPaws/LeftPaw") != null and vis_root.get_node_or_null("JellyPaws/RightPaw") != null, "تواجد الكفين الهلاميين التفاعليين على البطن")
+	assert_true(vis_root.get_node_or_null("InnerBubbles") != null and vis_root.get_node("InnerBubbles").get_child_count() >= 8, "تواجد الفقاعات الهلامية اللامعة داخل جسم سلايمي")
+	assert_true(slime.deformer.breathing_animator != null and slime.deformer.breathing_animator.is_playing(), "عمل AnimationPlayer للتنفس الهلامي المستمر")
+
+	# فحص تحسينات الواجهة الزجاجية (Full Rect دون تمرير، TextureProgressBar، أيقونات SVG، وTimer الأداء)
+	assert_true(hud.hud_root != null and hud.hud_root.clip_contents, "تأطير الواجهة بجذر Control Full Rect مع clip_contents لمنع أي شريط تمرير خارج إطار الهاتف")
+	assert_true(hud.bar_happiness is TextureProgressBar and hud.bar_happiness.texture_progress != null, "ترقية أشرطة الحالة العلوية إلى TextureProgressBar لامعة")
+	assert_true(hud.btn_feed.icon != null and hud.btn_play.icon != null and hud.btn_nap.icon != null and hud.btn_call.icon != null, "تزويد أزرار التحكم السفلية بأيقونات SVG عالية الدقة")
+	assert_true(AndroidPlatformManager.monitor_timer != null and not AndroidPlatformManager.monitor_timer.is_stopped(), "استخدام عقدة Timer بدلاً من _process لمراقبة الأداء والحواف الآمنة")
+	assert_true(room.get_node_or_null("MagicalSkyBackdrop") != null, "تواجد الخلفية الباستيلية الحالمة المضيئة لمنع أي خلفية سوداء")
 
 	# فحص تتبع اللمس الحقيقي عبر الأشعة (Raycast) على جسم سلايمي
 	var pokes_before: int = slime.mood_system.memory.total_pokes

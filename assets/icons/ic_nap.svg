@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="moonG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5D4FF"/>
+      <stop offset="100%" stop-color="#9F7AEA"/>
+    </linearGradient>
+  </defs>
+  <path d="M41 11 C26 13 15 26 17 41 C19 52 30 58 43 54 C32 51 27 41 29 29 C31 20 36 14 41 11 Z" fill="url(#moonG)" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/>
+  <polygon points="46,18 48,23 53,25 48,27 46,32 44,27 39,25 44,23" fill="#FFE680"/>
+  <circle cx="52" cy="39" r="2.6" fill="#FFB8E0"/>
+</svg>

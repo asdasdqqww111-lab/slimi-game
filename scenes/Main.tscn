@@ -14,14 +14,15 @@ script = ExtResource("1_main")
 [node name="Slimi" parent="." instance=ExtResource("3_slimi")]
 
 [node name="CameraRig" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.971338, 0.237703, 0, -0.237703, 0.971338, 0, 0.56, 0)
+transform = Transform3D(1, 0, 0, 0, 0.981627, 0.190809, 0, -0.190809, 0.981627, 0, 0.54, 0)
 
 [node name="MainCamera3D" type="Camera3D" parent="CameraRig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 3.35)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 3.12)
+keep_aspect = 0
 current = true
-fov = 48.0
+fov = 34.5
 near = 0.08
-far = 40.0
+far = 35.0
 
 [node name="TouchInteractionSystem" type="Node" parent="."]
 script = ExtResource("4_touch")

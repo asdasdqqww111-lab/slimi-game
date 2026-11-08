@@ -1,13 +1,25 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="1_hud"]
 [ext_resource type="Theme" path="res://resources/ui_pastel_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/icons/icon.svg" id="3_emblem_icon"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_memory.svg" id="4_ic_mem"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_settings.svg" id="5_ic_set"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_stat_happy.svg" id="6_ic_hap"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_stat_energy.svg" id="7_ic_eng"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_stat_fullness.svg" id="8_ic_ful"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_stat_bond.svg" id="9_ic_bnd"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_feed.svg" id="10_ic_feed"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_play.svg" id="11_ic_play"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_nap.svg" id="12_ic_nap"]
+[ext_resource type="Texture2D" path="res://assets/icons/ic_call.svg" id="13_ic_call"]
 
 [node name="GameHUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
 
-[node name="SafeMargin" type="MarginContainer" parent="."]
-layout_direction = 3
+[node name="HUDRoot" type="Control" parent="."]
+clip_contents = true
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -15,149 +27,258 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("2_theme")
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 22
 
-[node name="MainLayout" type="VBoxContainer" parent="SafeMargin"]
+[node name="SafeMargin" type="MarginContainer" parent="HUDRoot"]
+layout_direction = 3
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 16
+
+[node name="MainLayout" type="VBoxContainer" parent="HUDRoot/SafeMargin"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 8
 
-[node name="TopBar" type="HBoxContainer" parent="SafeMargin/MainLayout"]
+[node name="TopSection" type="VBoxContainer" parent="HUDRoot/SafeMargin/MainLayout"]
 layout_mode = 2
 mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderRow" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="IdentityCard" type="PanelContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IdentityHBox" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard"]
+layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="IdentityCard" type="PanelContainer" parent="SafeMargin/MainLayout/TopBar"]
+[node name="SlimeEmblem" type="TextureRect" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_emblem_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IdentityVBox" type="VBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 2
 
-[node name="IdentityVBox" type="VBoxContainer" parent="SafeMargin/MainLayout/TopBar/IdentityCard"]
+[node name="TitleRow" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox/IdentityVBox"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
-[node name="TitleRow" type="HBoxContainer" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox"]
-layout_mode = 2
-
-[node name="TitleLabel" type="Label" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox/TitleRow"]
+[node name="TitleLabel" type="Label" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox/IdentityVBox/TitleRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "سلايمي"
 
-[node name="FPSLabel" type="Label" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox/TitleRow"]
+[node name="FPSLabel" type="Label" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox/IdentityVBox/TitleRow"]
 visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.52, 0.32, 0.48, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.48, 0.22, 0.42, 1)
+theme_override_font_sizes/font_size = 14
 text = "60 FPS"
 
-[node name="MoodLabel" type="Label" parent="SafeMargin/MainLayout/TopBar/IdentityCard/IdentityVBox"]
+[node name="MoodLabel" type="Label" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/IdentityCard/IdentityHBox/IdentityVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.25, 0.45, 1)
-theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.58, 0.2, 0.45, 1)
+theme_override_font_sizes/font_size = 15
 text = "سعيد ومشرق"
 
-[node name="StatsCard" type="PanelContainer" parent="SafeMargin/MainLayout/TopBar"]
+[node name="UtilityButtons" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow"]
 layout_mode = 2
-size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="StatsGrid" type="GridContainer" parent="SafeMargin/MainLayout/TopBar/StatsCard"]
+[node name="BtnMemory" type="Button" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/UtilityButtons"]
+custom_minimum_size = Vector2(56, 54)
 layout_mode = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 5
+theme_override_font_sizes/font_size = 14
+text = "الذاكرة"
+icon = ExtResource("4_ic_mem")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="BtnSettings" type="Button" parent="HUDRoot/SafeMargin/MainLayout/TopSection/HeaderRow/UtilityButtons"]
+custom_minimum_size = Vector2(56, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "الإعدادات"
+icon = ExtResource("5_ic_set")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="StatsCard" type="PanelContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection"]
+layout_mode = 2
+
+[node name="StatsGrid" type="GridContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
 columns = 2
 
-[node name="LblHappiness" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+[node name="StatHappyRow" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="IconHappy" type="TextureRect" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatHappyRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("6_ic_hap")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LblHappiness" type="Label" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatHappyRow"]
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "السعادة"
 
-[node name="BarHappiness" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
-custom_minimum_size = Vector2(92, 14)
+[node name="BarHappiness" type="TextureProgressBar" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatHappyRow"]
+custom_minimum_size = Vector2(72, 16)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 value = 82.0
-show_percentage = false
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
 
-[node name="LblEnergy" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+[node name="StatEnergyRow" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="IconEnergy" type="TextureRect" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatEnergyRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("7_ic_eng")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LblEnergy" type="Label" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatEnergyRow"]
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "الطاقة"
 
-[node name="BarEnergy" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
-custom_minimum_size = Vector2(92, 14)
+[node name="BarEnergy" type="TextureProgressBar" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatEnergyRow"]
+custom_minimum_size = Vector2(72, 16)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 value = 86.0
-show_percentage = false
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
 
-[node name="LblFullness" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+[node name="StatFullnessRow" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="IconFullness" type="TextureRect" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatFullnessRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("8_ic_ful")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LblFullness" type="Label" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatFullnessRow"]
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "الشبع"
 
-[node name="BarFullness" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
-custom_minimum_size = Vector2(92, 14)
+[node name="BarFullness" type="TextureProgressBar" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatFullnessRow"]
+custom_minimum_size = Vector2(72, 16)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 value = 78.0
-show_percentage = false
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
 
-[node name="LblBond" type="Label" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
+[node name="StatBondRow" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="IconBond" type="TextureRect" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatBondRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("9_ic_bnd")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LblBond" type="Label" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatBondRow"]
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "الألفة"
 
-[node name="BarBond" type="ProgressBar" parent="SafeMargin/MainLayout/TopBar/StatsCard/StatsGrid"]
-custom_minimum_size = Vector2(92, 14)
+[node name="BarBond" type="TextureProgressBar" parent="HUDRoot/SafeMargin/MainLayout/TopSection/StatsCard/StatsGrid/StatBondRow"]
+custom_minimum_size = Vector2(72, 16)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 value = 25.0
-show_percentage = false
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
 
-[node name="UtilityButtons" type="VBoxContainer" parent="SafeMargin/MainLayout/TopBar"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="BtnMemory" type="Button" parent="SafeMargin/MainLayout/TopBar/UtilityButtons"]
-custom_minimum_size = Vector2(96, 44)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "الذاكرة"
-
-[node name="BtnSettings" type="Button" parent="SafeMargin/MainLayout/TopBar/UtilityButtons"]
-custom_minimum_size = Vector2(96, 44)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "الإعدادات"
-
-[node name="CenterArea" type="Control" parent="SafeMargin/MainLayout"]
+[node name="CenterArea" type="Control" parent="HUDRoot/SafeMargin/MainLayout"]
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="BubblePanel" type="PanelContainer" parent="SafeMargin/MainLayout/CenterArea"]
+[node name="BubblePanel" type="PanelContainer" parent="HUDRoot/SafeMargin/MainLayout/CenterArea"]
 visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -210.0
-offset_top = 8.0
-offset_right = 210.0
-offset_bottom = 78.0
+offset_left = -215.0
+offset_top = 4.0
+offset_right = 215.0
+offset_bottom = 72.0
 grow_horizontal = 2
-pivot_offset = Vector2(210, 35)
+pivot_offset = Vector2(215, 34)
 mouse_filter = 2
 
-[node name="BubbleLabel" type="Label" parent="SafeMargin/MainLayout/CenterArea/BubblePanel"]
+[node name="BubbleLabel" type="Label" parent="HUDRoot/SafeMargin/MainLayout/CenterArea/BubblePanel"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "مرحباً! أنا سلايمي!"
@@ -165,63 +286,88 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="BottomSection" type="VBoxContainer" parent="SafeMargin/MainLayout"]
+[node name="BottomSection" type="VBoxContainer" parent="HUDRoot/SafeMargin/MainLayout"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="HintLabel" type="Label" parent="SafeMargin/MainLayout/BottomSection"]
+[node name="HintLabel" type="Label" parent="HUDRoot/SafeMargin/MainLayout/BottomSection"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.45, 0.28, 0.42, 0.88)
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 0.99, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.26, 0.08, 0.22, 0.55)
+theme_override_colors/font_outline_color = Color(0.34, 0.12, 0.29, 0.95)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 18
 text = "المس سلايمي، امسح عليه، اسحبه بلطف، أو انقر على الأرض لينتقل إليها"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="ActionDock" type="PanelContainer" parent="SafeMargin/MainLayout/BottomSection"]
+[node name="ActionDock" type="PanelContainer" parent="HUDRoot/SafeMargin/MainLayout/BottomSection"]
 layout_mode = 2
 
-[node name="DockRow" type="HBoxContainer" parent="SafeMargin/MainLayout/BottomSection/ActionDock"]
+[node name="DockRow" type="HBoxContainer" parent="HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 alignment = 1
 
-[node name="BtnFeed" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
-custom_minimum_size = Vector2(0, 54)
+[node name="BtnFeed" type="Button" parent="HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
 text = "إطعام"
+icon = ExtResource("10_ic_feed")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
-[node name="BtnPlay" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
-custom_minimum_size = Vector2(0, 54)
+[node name="BtnPlay" type="Button" parent="HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
 text = "لعب"
+icon = ExtResource("11_ic_play")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
-[node name="BtnNap" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
-custom_minimum_size = Vector2(0, 54)
+[node name="BtnNap" type="Button" parent="HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
 text = "غفوة"
+icon = ExtResource("12_ic_nap")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
-[node name="BtnCall" type="Button" parent="SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
-custom_minimum_size = Vector2(0, 54)
+[node name="BtnCall" type="Button" parent="HUDRoot/SafeMargin/MainLayout/BottomSection/ActionDock/DockRow"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
 text = "مناداة"
+icon = ExtResource("13_ic_call")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
-[node name="SettingsModal" type="ColorRect" parent="."]
+[node name="SettingsModal" type="ColorRect" parent="HUDRoot"]
 visible = false
 layout_direction = 3
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_theme")
-color = Color(0.18, 0.1, 0.2, 0.46)
+color = Color(0.2, 0.09, 0.22, 0.48)
 
-[node name="Card" type="PanelContainer" parent="SettingsModal"]
+[node name="Card" type="PanelContainer" parent="HUDRoot/SettingsModal"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -229,104 +375,104 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -245.0
-offset_top = -285.0
+offset_top = -275.0
 offset_right = 245.0
-offset_bottom = 285.0
+offset_bottom = 275.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="SettingsModal/Card"]
+[node name="VBox" type="VBoxContainer" parent="HUDRoot/SettingsModal/Card"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 9
 
-[node name="SettingsTitle" type="Label" parent="SettingsModal/Card/VBox"]
+[node name="SettingsTitle" type="Label" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "إعدادات اللعبة والجودة"
 horizontal_alignment = 1
 
-[node name="QualityLabel" type="Label" parent="SettingsModal/Card/VBox"]
+[node name="QualityLabel" type="Label" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 text = "جودة الرسوميات"
 
-[node name="QualityRow" type="HBoxContainer" parent="SettingsModal/Card/VBox"]
+[node name="QualityRow" type="HBoxContainer" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="BtnLow" type="Button" parent="SettingsModal/Card/VBox/QualityRow"]
+[node name="BtnLow" type="Button" parent="HUDRoot/SettingsModal/Card/VBox/QualityRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "منخفضة"
 
-[node name="BtnMedium" type="Button" parent="SettingsModal/Card/VBox/QualityRow"]
+[node name="BtnMedium" type="Button" parent="HUDRoot/SettingsModal/Card/VBox/QualityRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "متوسطة"
 
-[node name="BtnHigh" type="Button" parent="SettingsModal/Card/VBox/QualityRow"]
+[node name="BtnHigh" type="Button" parent="HUDRoot/SettingsModal/Card/VBox/QualityRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "عالية"
 
-[node name="LblMasterVol" type="Label" parent="SettingsModal/Card/VBox"]
+[node name="LblMasterVol" type="Label" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 text = "الصوت العام"
 
-[node name="SliderMaster" type="HSlider" parent="SettingsModal/Card/VBox"]
+[node name="SliderMaster" type="HSlider" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 max_value = 1.0
 step = 0.05
 value = 0.9
 
-[node name="LblSfxVol" type="Label" parent="SettingsModal/Card/VBox"]
+[node name="LblSfxVol" type="Label" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 text = "المؤثرات والأصوات"
 
-[node name="SliderSfx" type="HSlider" parent="SettingsModal/Card/VBox"]
+[node name="SliderSfx" type="HSlider" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 max_value = 1.0
 step = 0.05
 value = 0.9
 
-[node name="ChkAmbient" type="CheckButton" parent="SettingsModal/Card/VBox"]
+[node name="ChkAmbient" type="CheckButton" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 button_pressed = true
 text = "موسيقى الغرفة الهادئة"
 
-[node name="ChkBattery" type="CheckButton" parent="SettingsModal/Card/VBox"]
+[node name="ChkBattery" type="CheckButton" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 text = "توفير البطارية (30 إطار/ث)"
 
-[node name="ChkHaptics" type="CheckButton" parent="SettingsModal/Card/VBox"]
+[node name="ChkHaptics" type="CheckButton" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 button_pressed = true
 text = "اهتزاز اللمس اللطيف"
 
-[node name="ChkFps" type="CheckButton" parent="SettingsModal/Card/VBox"]
+[node name="ChkFps" type="CheckButton" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 text = "إظهار عدّاد الأداء (FPS)"
 
-[node name="BtnLang" type="Button" parent="SettingsModal/Card/VBox"]
+[node name="BtnLang" type="Button" parent="HUDRoot/SettingsModal/Card/VBox"]
 layout_mode = 2
 text = "اللغة: العربية"
 
-[node name="BtnCloseSettings" type="Button" parent="SettingsModal/Card/VBox"]
-custom_minimum_size = Vector2(0, 46)
+[node name="BtnCloseSettings" type="Button" parent="HUDRoot/SettingsModal/Card/VBox"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 text = "إغلاق"
 
-[node name="MemoryModal" type="ColorRect" parent="."]
+[node name="MemoryModal" type="ColorRect" parent="HUDRoot"]
 visible = false
 layout_direction = 3
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_theme")
-color = Color(0.18, 0.1, 0.2, 0.46)
+color = Color(0.2, 0.09, 0.22, 0.48)
 
-[node name="Card" type="PanelContainer" parent="MemoryModal"]
+[node name="Card" type="PanelContainer" parent="HUDRoot/MemoryModal"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -340,45 +486,49 @@ offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="MemoryModal/Card"]
+[node name="VBox" type="VBoxContainer" parent="HUDRoot/MemoryModal/Card"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 11
 
-[node name="MemoryTitle" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemoryTitle" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "ذاكرة سلايمي معك"
 horizontal_alignment = 1
 
-[node name="MemSessions" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemSessions" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 text = "عدد الزيارات: 1"
 
-[node name="MemPokes" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemPokes" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 text = "اللمسات المرحة: 0"
 
-[node name="MemPets" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemPets" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 text = "المسحات الحنونة: 0"
 
-[node name="MemFeeds" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemFeeds" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 text = "وجبات الحلوى: 0"
 
-[node name="MemPlays" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemPlays" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 text = "مرات اللعب: 0"
 
-[node name="MemBond" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemBond" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 text = "مستوى العلاقة: صديق جديد"
 
-[node name="MemFav" type="Label" parent="MemoryModal/Card/VBox"]
+[node name="MemFav" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
 layout_mode = 2
 text = "التفاعل المفضل: المسح الحنون على الرأس"
 
-[node name="BtnCloseMemory" type="Button" parent="MemoryModal/Card/VBox"]
-custom_minimum_size = Vector2(0, 46)
+[node name="BtnCloseMemory" type="Label" parent="HUDRoot/MemoryModal/Card/VBox"]
+visible = false
+layout_mode = 2
+
+[node name="BtnCloseMemoryBtn" type="Button" parent="HUDRoot/MemoryModal/Card/VBox"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 text = "إغلاق"

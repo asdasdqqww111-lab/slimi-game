@@ -1,28 +1,69 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFF0F6"/>
-      <stop offset="100%" stop-color="#E8F4FF"/>
+      <stop offset="0%" stop-color="#FFF0F8"/>
+      <stop offset="50%" stop-color="#F6E8FF"/>
+      <stop offset="100%" stop-color="#FFEAF4"/>
     </linearGradient>
-    <radialGradient id="slimeGrad" cx="38%" cy="32%" r="65%">
-      <stop offset="0%" stop-color="#FFD6E8"/>
-      <stop offset="55%" stop-color="#FF9EC7"/>
-      <stop offset="100%" stop-color="#F06EA9"/>
+    <radialGradient id="jellyBody" cx="46%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="#FFD4EA"/>
+      <stop offset="55%" stop-color="#FF8EC6"/>
+      <stop offset="88%" stop-color="#F656A6"/>
+      <stop offset="100%" stop-color="#FFBEE0"/>
     </radialGradient>
+    <linearGradient id="beanieGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE89E"/>
+      <stop offset="100%" stop-color="#F7C252"/>
+    </linearGradient>
+    <linearGradient id="eyeNebula" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A0B24"/>
+      <stop offset="58%" stop-color="#3B1045"/>
+      <stop offset="100%" stop-color="#DA3AB3"/>
+    </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
-  <ellipse cx="256" cy="408" rx="152" ry="26" fill="#E3B8CE" opacity="0.45"/>
-  <path d="M256 96 C272 96 282 114 274 130 C268 142 244 142 238 130 C230 114 240 96 256 96 Z" fill="#FFB3D4"/>
-  <path d="M256 132 C358 132 420 214 420 308 C420 378 364 410 256 410 C148 410 92 378 92 308 C92 214 154 132 256 132 Z" fill="url(#slimeGrad)"/>
-  <ellipse cx="192" cy="196" rx="46" ry="24" transform="rotate(-24 192 196)" fill="#FFFFFF" opacity="0.62"/>
-  <circle cx="152" cy="226" r="11" fill="#FFFFFF" opacity="0.5"/>
-  <ellipse cx="196" cy="276" rx="31" ry="35" fill="#3B234A"/>
-  <ellipse cx="316" cy="276" rx="31" ry="35" fill="#3B234A"/>
-  <circle cx="185" cy="263" r="11" fill="#FFFFFF"/>
-  <circle cx="207" cy="287" r="5" fill="#FFFFFF"/>
-  <circle cx="305" cy="263" r="11" fill="#FFFFFF"/>
-  <circle cx="327" cy="287" r="5" fill="#FFFFFF"/>
-  <ellipse cx="146" cy="312" rx="24" ry="13" fill="#FF6B9D" opacity="0.55"/>
-  <ellipse cx="366" cy="312" rx="24" ry="13" fill="#FF6B9D" opacity="0.55"/>
-  <path d="M228 314 Q256 342 284 314" fill="none" stroke="#3B234A" stroke-width="10" stroke-linecap="round"/>
+  <rect width="512" height="512" rx="116" fill="url(#bgGrad)"/>
+  <ellipse cx="256" cy="442" rx="176" ry="24" fill="#E5B2CE" opacity="0.45"/>
+  <!-- Star Antenna (Top Left) -->
+  <path d="M188 184 C166 118 112 114 96 156" fill="none" stroke="#FF82C0" stroke-width="18" stroke-linecap="round"/>
+  <path d="M188 184 C166 118 112 114 96 156" fill="none" stroke="#FFDDF0" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="94,136 102,152 120,155 107,167 110,185 94,176 78,185 81,167 68,155 86,152" fill="#FF7AB8" stroke="#FFD6EB" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Main Pink Mochi Jelly Body -->
+  <path d="M256 156 C368 156 438 246 438 350 C438 418 380 444 256 444 C132 444 74 418 74 350 C74 246 144 156 256 156 Z" fill="url(#jellyBody)" stroke="#FFA8D5" stroke-width="6"/>
+  <!-- Glossy Studio Highlights & Bubbles -->
+  <path d="M138 242 C164 198 214 180 246 182" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.78"/>
+  <circle cx="118" cy="378" r="18" fill="#FFD6EC" stroke="#FFFFFF" stroke-width="3" opacity="0.65"/>
+  <circle cx="392" cy="382" r="22" fill="#FFD6EC" stroke="#FFFFFF" stroke-width="3" opacity="0.65"/>
+  <circle cx="204" cy="422" r="13" fill="#FFD6EC" stroke="#FFFFFF" stroke-width="2.5" opacity="0.62"/>
+  <!-- Cozy Yellow Knitted Beanie (Top Right) -->
+  <g transform="translate(328,148) rotate(23)">
+    <path d="M-92 22 C-88 -54 88 -54 92 22 Z" fill="url(#beanieGrad)" stroke="#E3A83B" stroke-width="5"/>
+    <rect x="-102" y="6" width="204" height="40" rx="20" fill="#FFD97D" stroke="#E3A83B" stroke-width="5"/>
+    <circle cx="0" cy="-54" r="30" fill="#FFFDF9" stroke="#EFE6EE" stroke-width="4"/>
+    <!-- Yarn Flower -->
+    <circle cx="28" cy="-4" r="11" fill="#6AD968"/>
+    <circle cx="48" cy="-2" r="11" fill="#A974F5"/>
+    <circle cx="50" cy="16" r="11" fill="#FFD447"/>
+    <circle cx="28" cy="16" r="11" fill="#EAAEC4"/>
+    <circle cx="39" cy="7" r="7" fill="#FFFFFF"/>
+    <!-- Pink Heart Pin -->
+    <path d="M78 18 C78 11 88 11 88 18 C88 11 98 11 98 18 C98 27 88 33 88 33 C88 33 78 27 78 18 Z" fill="#FFA8CC" stroke="#FFFFFF" stroke-width="2"/>
+  </g>
+  <!-- Sparkly Galaxy Eyes -->
+  <ellipse cx="182" cy="278" rx="42" ry="46" fill="url(#eyeNebula)" stroke="#3B122C" stroke-width="6"/>
+  <ellipse cx="330" cy="278" rx="42" ry="46" fill="url(#eyeNebula)" stroke="#3B122C" stroke-width="6"/>
+  <circle cx="166" cy="258" r="13" fill="#FFFFFF"/>
+  <circle cx="314" cy="258" r="13" fill="#FFFFFF"/>
+  <polygon points="196,294 200,303 210,304 202,310 205,320 196,315 187,320 190,310 182,304 192,303" fill="#FFE27A"/>
+  <polygon points="344,294 348,303 358,304 350,310 353,320 344,315 335,320 338,310 330,304 340,303" fill="#FFE27A"/>
+  <!-- Rosy Cheeks with /// Blush -->
+  <ellipse cx="144" cy="332" rx="34" ry="18" fill="#FF6B98" opacity="0.62"/>
+  <ellipse cx="368" cy="332" rx="34" ry="18" fill="#FF6B98" opacity="0.62"/>
+  <path d="M132 334 L138 324 M144 335 L150 325 M156 334 L162 324" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M356 334 L362 324 M368 335 L374 325 M380 334 L386 324" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Cute Open Mouth with Pink Tongue -->
+  <ellipse cx="256" cy="316" rx="19" ry="21" fill="#8E1C4A"/>
+  <ellipse cx="256" cy="327" rx="14" ry="9" fill="#FF7EB3"/>
+  <!-- Plump Jelly Paws -->
+  <ellipse cx="210" cy="376" rx="42" ry="26" transform="rotate(-16 210 376)" fill="#FF8AC4" stroke="#FFFFFF" stroke-width="4" opacity="0.9"/>
+  <ellipse cx="302" cy="376" rx="42" ry="26" transform="rotate(16 302 376)" fill="#FF8AC4" stroke="#FFFFFF" stroke-width="4" opacity="0.9"/>
 </svg>

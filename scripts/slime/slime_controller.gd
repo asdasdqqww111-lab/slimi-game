@@ -1,10 +1,10 @@
 class_name SlimeController
 extends CharacterBody3D
-## المتحكم الفيزيائي والسلوكي لشخصية سلايمي ثلاثية الأبعاد.
+## المتحكم الفيزيائي والسلوكي لشخصية سلايمي ثلاثية الأبعاد المستوحاة من الصورة المرجعية.
 
 signal slime_interacted(interaction_type: StringName, world_pos: Vector3)
 
-@export var max_room_radius: float = 2.25
+@export var max_room_radius: float = 2.15
 @export var hop_vertical_speed: float = 4.35
 @export var hop_horizontal_speed: float = 2.35
 @export var turn_speed: float = 7.5
@@ -14,8 +14,9 @@ var face_rig: SlimeFaceRig
 var mood_system: PersonalityMoodSystem
 var ai_brain: Node
 var body_mesh_instance: MeshInstance3D
+var accessory_refs: Dictionary = {}
 
-var look_target_world := Vector3(0.0, 1.1, 3.2)
+var look_target_world := Vector3(0.0, 0.72, 2.95)
 var is_being_dragged: bool = false
 
 var _was_on_floor: bool = true
@@ -27,9 +28,15 @@ var _spin_velocity_y: float = 0.0
 
 func _ready() -> void:
 	_gravity = float(ProjectSettings.get_setting("physics/3d/default_gravity", 13.5))
+	var visual_root := get_node_or_null("VisualRoot") as Node3D
 	body_mesh_instance = get_node_or_null("VisualRoot/SlimeBodyMesh") as MeshInstance3D
 	var face_node := get_node_or_null("VisualRoot/FaceAnchor") as SlimeFaceRig
 	var crown_node := get_node_or_null("VisualRoot/DropletCrown") as Node3D
+
+	if crown_node != null:
+		crown_node.visible = false
+
+	accessory_refs = SlimeAccessoryBuilder.build_reference_accessories(visual_root)
 
 	face_rig = face_node
 	deformer = get_node_or_null("SlimeDeformer") as SlimeDeformer
@@ -37,7 +44,7 @@ func _ready() -> void:
 	ai_brain = get_node_or_null("AutonomousBehaviorAI")
 
 	if deformer != null:
-		deformer.setup(body_mesh_instance, face_rig, crown_node)
+		deformer.setup(body_mesh_instance, face_rig, crown_node, accessory_refs)
 
 	if mood_system != null:
 		mood_system.mood_changed.connect(_on_mood_changed)
@@ -57,7 +64,6 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= _gravity * delta
 	else:
 		if not _was_on_floor and _pre_land_vy < -0.8:
-			# انضغاط مرن لطيف عند الهبوط على الأرض
 			var impact: float = clampf(-_pre_land_vy * 0.62, 0.6, 3.4)
 			if deformer != null:
 				deformer.add_vertical_impulse(-impact)
@@ -97,6 +103,7 @@ func hop_toward(target_world_pos: Vector3, power_scale: float = 1.0) -> bool:
 		deformer.add_vertical_impulse(2.85 * power_scale)
 		var local_dir: Vector3 = global_transform.basis.inverse() * (-dir)
 		deformer.add_jiggle_impulse(local_dir * 1.4)
+		deformer.play_paw_gesture(1, 0.65)
 
 	AudioManager.play_sfx(&"boing_hop", 0.0, -2.5)
 	return true
@@ -110,6 +117,7 @@ func perform_happy_bounce() -> void:
 		_spin_velocity_y = TAU * 1.35
 	if deformer != null:
 		deformer.add_vertical_impulse(3.2)
+		deformer.play_paw_gesture(1, 1.35)
 	if face_rig != null:
 		face_rig.set_expression(SlimeFaceRig.FaceExpression.PLAYFUL)
 	AudioManager.play_voice(&"happy_chirp")
@@ -144,6 +152,7 @@ func on_petted(world_hit_pos: Vector3, stroke_intensity: float = 1.0) -> void:
 	if deformer != null:
 		deformer.add_jiggle_impulse(Vector3(local_hit.x * 0.6, 0.0, local_hit.z * 0.6) * stroke_intensity)
 		deformer.add_vertical_impulse(-0.35 * stroke_intensity)
+		deformer.play_paw_gesture(2, 0.95)
 
 	if mood_system != null:
 		mood_system.register_pet(clampf(stroke_intensity, 0.25, 1.25))
@@ -188,6 +197,7 @@ func feed_treat(treat_world_pos: Vector3) -> void:
 		mood_system.register_feed()
 	if deformer != null:
 		deformer.add_vertical_impulse(2.1)
+		deformer.play_paw_gesture(1, 1.25)
 	AudioManager.play_voice(&"eat_nom")
 	AndroidPlatformManager.trigger_haptic(20)
 	slime_interacted.emit(&"feed", treat_world_pos)
@@ -214,6 +224,7 @@ func toggle_nap() -> void:
 		AudioManager.play_voice(&"happy_chirp")
 		if deformer != null:
 			deformer.add_vertical_impulse(2.0)
+			deformer.play_paw_gesture(1, 0.85)
 
 
 func call_to_front(front_spot: Vector3, camera_pos: Vector3) -> void:
@@ -270,7 +281,7 @@ func _sync_mood_visuals(mood_val: int) -> void:
 func _on_quality_changed(_preset: int, profile: Dictionary) -> void:
 	if body_mesh_instance != null and body_mesh_instance.mesh is SphereMesh:
 		var sm := body_mesh_instance.mesh as SphereMesh
-		sm.radial_segments = int(profile.get("slime_radial_segments", 36))
-		sm.rings = int(profile.get("slime_rings", 24))
+		sm.radial_segments = int(profile.get("slime_radial_segments", 48))
+		sm.rings = int(profile.get("slime_rings", 34))
 	if deformer != null:
-		deformer.set_shader_detail(int(profile.get("shader_detail", 1)))
+		deformer.set_shader_detail(int(profile.get("shader_detail", 2)))

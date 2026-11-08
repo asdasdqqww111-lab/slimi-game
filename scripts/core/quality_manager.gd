@@ -1,5 +1,5 @@
 extends Node
-## مدير مستويات جودة الرسوميات والأداء (منخفضة / متوسطة / عالية) المتوافق مع Compatibility Renderer.
+## مدير مستويات جودة الرسوميات والأداء (منخفضة / متوسطة / عالية) المحسّن لثبات 60 FPS على الهواتف.
 
 signal quality_changed(preset: int, profile: Dictionary)
 
@@ -12,35 +12,35 @@ enum Preset {
 const PROFILES: Dictionary = {
 	Preset.LOW: {
 		"name_key": "quality_low",
-		"render_scale": 0.75,
+		"render_scale": 0.85,
 		"msaa": Viewport.MSAA_DISABLED,
 		"shadows_enabled": false,
 		"shadow_atlas_size": 0,
 		"accent_light": false,
 		"slime_radial_segments": 24,
-		"slime_rings": 16,
-		"shader_detail": 0,
+		"slime_rings": 18,
+		"shader_detail": 1,
 	},
 	Preset.MEDIUM: {
 		"name_key": "quality_medium",
-		"render_scale": 0.90,
-		"msaa": Viewport.MSAA_2X,
-		"shadows_enabled": true,
-		"shadow_atlas_size": 1024,
-		"accent_light": true,
-		"slime_radial_segments": 36,
-		"slime_rings": 24,
-		"shader_detail": 1,
+		"render_scale": 1.00,
+		"msaa": Viewport.MSAA_DISABLED,
+		"shadows_enabled": false,
+		"shadow_atlas_size": 0,
+		"accent_light": false,
+		"slime_radial_segments": 48,
+		"slime_rings": 34,
+		"shader_detail": 2,
 	},
 	Preset.HIGH: {
 		"name_key": "quality_high",
 		"render_scale": 1.00,
-		"msaa": Viewport.MSAA_4X,
+		"msaa": Viewport.MSAA_2X,
 		"shadows_enabled": true,
-		"shadow_atlas_size": 2048,
+		"shadow_atlas_size": 1024,
 		"accent_light": true,
 		"slime_radial_segments": 48,
-		"slime_rings": 32,
+		"slime_rings": 36,
 		"shader_detail": 2,
 	},
 }
