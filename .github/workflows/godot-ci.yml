@@ -122,8 +122,8 @@ jobs:
             echo "::error title=Package Check::Expected com.slimigame.slimi, got $(head -n 1 /tmp/badging.txt)"
             exit 1
           fi
-          if ! grep -q "sdkVersion:'26'" /tmp/badging.txt; then
-            echo "::error title=MinSDK Check::Expected sdkVersion 26, got $(grep sdkVersion /tmp/badging.txt || true)"
+          if ! grep -Eq "(minSdkVersion|sdkVersion):'26'" /tmp/badging.txt; then
+            echo "::error title=MinSDK Check::Expected minSdkVersion 26, got $(grep -i 'sdk' /tmp/badging.txt | tr '\n' ' ' || true)"
             exit 1
           fi
           if ! grep -q "arm64-v8a" /tmp/badging.txt || ! grep -q "armeabi-v7a" /tmp/badging.txt; then
