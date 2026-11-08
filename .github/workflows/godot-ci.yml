@@ -112,27 +112,40 @@ jobs:
           APKSIGNER="${ANDROID_HOME}/build-tools/36.1.0/apksigner"
           AAPT2="${ANDROID_HOME}/build-tools/36.1.0/aapt2"
 
-          "${APKSIGNER}" verify --verbose build/android/slimi-debug.apk
-          BADGING="$("${AAPT2}" dump badging build/android/slimi-debug.apk)"
-          echo "${BADGING}" | head -n 30
+          "${APKSIGNER}" verify --verbose build/android/slimi-debug.apk > /tmp/apksigner.txt
+          cat /tmp/apksigner.txt
 
-          echo "${BADGING}" | grep -q "package: name='com.slimigame.slimi'"
-          echo "${BADGING}" | grep -q "sdkVersion:'26'"
-          echo "${BADGING}" | grep -q "arm64-v8a"
-          echo "${BADGING}" | grep -q "armeabi-v7a"
-          if echo "${BADGING}" | grep -q "android.permission.INTERNET"; then
-            echo "ERROR: Unexpected INTERNET permission found in APK!"
+          "${AAPT2}" dump badging build/android/slimi-debug.apk > /tmp/badging.txt
+          sed -n '1,30p' /tmp/badging.txt
+
+          if ! grep -q "package: name='com.slimigame.slimi'" /tmp/badging.txt; then
+            echo "::error title=Package Check::Expected com.slimigame.slimi, got $(head -n 1 /tmp/badging.txt)"
+            exit 1
+          fi
+          if ! grep -q "sdkVersion:'26'" /tmp/badging.txt; then
+            echo "::error title=MinSDK Check::Expected sdkVersion 26, got $(grep sdkVersion /tmp/badging.txt || true)"
+            exit 1
+          fi
+          if ! grep -q "arm64-v8a" /tmp/badging.txt || ! grep -q "armeabi-v7a" /tmp/badging.txt; then
+            echo "::error title=ABI Check::Expected arm64-v8a and armeabi-v7a, got $(grep native-code /tmp/badging.txt || true)"
+            exit 1
+          fi
+          if grep -q "android.permission.INTERNET" /tmp/badging.txt; then
+            echo "::error title=Offline Check::Unexpected INTERNET permission found in APK"
             exit 1
           fi
 
           APK_BYTES=$(stat -c "%s" build/android/slimi-debug.apk)
-          APK_HUMAN=$(ls -lh build/android/slimi-debug.apk | awk '{print $5}')
-          echo "APK_BYTES=${APK_BYTES}"
-          echo "APK_HUMAN=${APK_HUMAN}"
+          APK_MIB=$(awk "BEGIN {printf \"%.2f MiB\", ${APK_BYTES}/1048576}")
+          APK_MB=$(awk "BEGIN {printf \"%.2f MB\", ${APK_BYTES}/1000000}")
+          APK_SHA256=$(sha256sum build/android/slimi-debug.apk | awk '{print $1}')
+
+          echo "::notice title=SLIMI APK Verified::File=slimi-debug.apk | Size=${APK_MB} (${APK_MIB} / ${APK_BYTES} bytes) | SHA256=${APK_SHA256} | Package=com.slimigame.slimi | MinSDK=26 | ABIs=arm64-v8a,armeabi-v7a | Signature=Verified | InternetPermission=None"
           {
             echo "### SLIMI Android Debug APK Summary"
             echo "- **File**: \`slimi-debug.apk\`"
-            echo "- **Size**: ${APK_HUMAN} (${APK_BYTES} bytes)"
+            echo "- **Size**: ${APK_MB} (${APK_MIB} / ${APK_BYTES} bytes)"
+            echo "- **SHA-256**: \`${APK_SHA256}\`"
             echo "- **Package**: \`com.slimigame.slimi\`"
             echo "- **Min SDK**: 26 (Android 8.0+)"
             echo "- **ABIs**: \`arm64-v8a\`, \`armeabi-v7a\`"
