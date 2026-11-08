@@ -1,8 +1,11 @@
 class_name RoomEnvironment
 extends Node3D
-## إدارة الغرفة الافتراضية ثلاثية الأبعاد: نقاط الاهتمام، إضاءة الجودة المتكيفة، والمؤثرات الخفيفة.
+## إعداد العرض السينمائي ثلاثي النقاط للغرفة (Cinematic 3-Point Studio Lighting Rig):
+## يضم Soft Key Light + Pastel Fill Light + Back Rim Light مع ظلال ناعمة وتعرض متسق.
 
 var sun_light: DirectionalLight3D
+var studio_fill_light: DirectionalLight3D
+var studio_rim_light: DirectionalLight3D
 var warm_accent_light: OmniLight3D
 var treat_anchor: Marker3D
 var poi_container: Node3D
@@ -16,6 +19,8 @@ func _ready() -> void:
 	warm_accent_light = get_node_or_null("WarmAccentLight") as OmniLight3D
 	treat_anchor = get_node_or_null("Props/FoodBowl/TreatAnchor") as Marker3D
 	poi_container = get_node_or_null("PointsOfInterest") as Node3D
+
+	_setup_cinematic_fill_and_rim_lights()
 
 	_treat_material = StandardMaterial3D.new()
 	_treat_material.albedo_color = Color(1.0, 0.45, 0.68, 1.0)
@@ -33,6 +38,48 @@ func _ready() -> void:
 	if QualityManager != null:
 		QualityManager.quality_changed.connect(_on_quality_changed)
 		_on_quality_changed(QualityManager.current_preset, QualityManager.get_current_profile())
+
+
+func _setup_cinematic_fill_and_rim_lights() -> void:
+	if sun_light != null:
+		sun_light.light_color = Color(1.0, 0.97, 0.95, 1.0)
+		sun_light.light_energy = 0.82
+		sun_light.shadow_opacity = 0.26
+
+	studio_fill_light = DirectionalLight3D.new()
+	studio_fill_light.name = "StudioFillLight"
+	studio_fill_light.light_color = Color(0.95, 0.92, 1.0, 1.0)
+	studio_fill_light.light_energy = 0.28
+	studio_fill_light.shadow_enabled = false
+	studio_fill_light.rotation_degrees = Vector3(-28.0, -42.0, 0.0)
+	add_child(studio_fill_light)
+
+	studio_rim_light = DirectionalLight3D.new()
+	studio_rim_light.name = "CinematicRimLight"
+	studio_rim_light.light_color = Color(1.0, 0.90, 0.98, 1.0)
+	studio_rim_light.light_energy = 0.36
+	studio_rim_light.shadow_enabled = false
+	studio_rim_light.rotation_degrees = Vector3(-34.0, 162.0, 0.0)
+	add_child(studio_rim_light)
+
+
+func get_studio_light_directions() -> Dictionary:
+	var key_dir := Vector3(-0.46, 0.68, 0.57).normalized()
+	var fill_dir := Vector3(0.58, 0.44, 0.68).normalized()
+	var rim_dir := Vector3(0.12, 0.54, -0.83).normalized()
+
+	if sun_light != null:
+		key_dir = sun_light.global_transform.basis.z.normalized()
+	if studio_fill_light != null:
+		fill_dir = studio_fill_light.global_transform.basis.z.normalized()
+	if studio_rim_light != null:
+		rim_dir = studio_rim_light.global_transform.basis.z.normalized()
+
+	return {
+		"key": key_dir,
+		"fill": fill_dir,
+		"rim": rim_dir,
+	}
 
 
 func get_points_of_interest() -> Array[Vector3]:
@@ -94,5 +141,9 @@ func spawn_floor_tap_ring(world_pos: Vector3) -> void:
 func _on_quality_changed(_preset: int, profile: Dictionary) -> void:
 	if sun_light != null:
 		sun_light.shadow_enabled = bool(profile.get("shadows_enabled", true))
+	if studio_fill_light != null:
+		studio_fill_light.visible = bool(profile.get("fill_light", true))
+	if studio_rim_light != null:
+		studio_rim_light.visible = bool(profile.get("rim_light", true))
 	if warm_accent_light != null:
 		warm_accent_light.visible = bool(profile.get("accent_light", true))

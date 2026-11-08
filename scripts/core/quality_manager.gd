@@ -1,5 +1,7 @@
 extends Node
-## مدير مستويات جودة الرسوميات والأداء (منخفضة / متوسطة / عالية) المحسّن لثبات 60 FPS على الهواتف.
+## مدير مستويات جودة الرسوميات والأداء القابل للتدرج (LOW / MEDIUM / HIGH):
+## - الإعداد الافتراضي هو MEDIUM (لا يفرض HIGH أبداً على الأجهزة المتوسطة أو الاقتصادية).
+## - يضبط دقة طوبولوجيا مجسم الهلام، تعقيد الشيدر، الظلال، الإضاءة الحافية (Rim/Fill)، ومضاد التعرج MSAA.
 
 signal quality_changed(preset: int, profile: Dictionary)
 
@@ -16,31 +18,34 @@ const PROFILES: Dictionary = {
 		"msaa": Viewport.MSAA_DISABLED,
 		"shadows_enabled": false,
 		"shadow_atlas_size": 0,
+		"fill_light": false,
+		"rim_light": false,
 		"accent_light": false,
-		"slime_radial_segments": 24,
-		"slime_rings": 18,
-		"shader_detail": 1,
+		"slime_subdiv": 12,
+		"shader_detail": 0,
 	},
 	Preset.MEDIUM: {
 		"name_key": "quality_medium",
 		"render_scale": 1.00,
 		"msaa": Viewport.MSAA_DISABLED,
-		"shadows_enabled": false,
-		"shadow_atlas_size": 0,
+		"shadows_enabled": true,
+		"shadow_atlas_size": 1024,
+		"fill_light": true,
+		"rim_light": true,
 		"accent_light": false,
-		"slime_radial_segments": 48,
-		"slime_rings": 34,
-		"shader_detail": 2,
+		"slime_subdiv": 20,
+		"shader_detail": 1,
 	},
 	Preset.HIGH: {
 		"name_key": "quality_high",
 		"render_scale": 1.00,
 		"msaa": Viewport.MSAA_2X,
 		"shadows_enabled": true,
-		"shadow_atlas_size": 1024,
+		"shadow_atlas_size": 2048,
+		"fill_light": true,
+		"rim_light": true,
 		"accent_light": true,
-		"slime_radial_segments": 48,
-		"slime_rings": 36,
+		"slime_subdiv": 28,
 		"shader_detail": 2,
 	},
 }
@@ -72,8 +77,8 @@ func apply_preset(preset: int, persist: bool = true) -> void:
 		vp.positional_shadow_atlas_size = int(profile["shadow_atlas_size"])
 
 	if DisplayServer.get_name() != "headless":
-		if int(profile["shadow_atlas_size"]) > 0:
-			RenderingServer.directional_shadow_atlas_set_size(int(profile["shadow_atlas_size"]), true)
+		var s_size: int = maxi(int(profile["shadow_atlas_size"]), 512)
+		RenderingServer.directional_shadow_atlas_set_size(s_size, true)
 
 	if persist:
 		SaveManager.update_section("settings", {"quality_preset": current_preset})

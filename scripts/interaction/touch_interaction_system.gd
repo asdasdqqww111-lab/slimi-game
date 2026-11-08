@@ -1,14 +1,17 @@
 class_name TouchInteractionSystem
 extends Node
-## نظام التفاعل باللمس المتعدد وتتبع الأشعة ثلاثي الأبعاد (Android Touch + Mouse Fallback).
+## نظام التفاعل باللمس المتعدد وتتبع الأشعة الدقيق للأجزاء (Body vs Antennae vs Hat/Pom-Pom/Flower)
+## مع تتبع هادئ ومستقر للكاميرا السينمائية.
 
 signal slime_touched(kind: StringName, world_pos: Vector3)
+signal slime_part_touched(part_id: StringName, world_pos: Vector3)
 signal floor_tapped(world_pos: Vector3)
 
 enum TouchMode {
 	NONE = 0,
 	ON_SLIME = 1,
-	ON_ROOM = 2,
+	ON_SLIME_PART = 2,
+	ON_ROOM = 3,
 }
 
 const TAP_MAX_DRAG_PX: float = 24.0
@@ -22,8 +25,11 @@ const PULL_NET_DISTANCE_PX: float = 135.0
 @export var room: Node3D
 @export var hud: HUDController
 
+var enable_subtle_camera_tracking: bool = true
+
 var _active_pointer_id: int = -1
 var _touch_mode: int = TouchMode.NONE
+var _hit_part_id: StringName = &""
 var _press_screen_pos := Vector2.ZERO
 var _last_screen_pos := Vector2.ZERO
 var _press_hit_world := Vector3.ZERO
@@ -46,8 +52,11 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if camera_pivot != null:
-		camera_pivot.rotation.y = lerpf(camera_pivot.rotation.y, _target_cam_yaw, minf(1.0, delta * 7.5))
-		camera_pivot.rotation.x = lerpf(camera_pivot.rotation.x, _target_cam_pitch, minf(1.0, delta * 7.5))
+		var track_yaw_bonus: float = 0.0
+		if enable_subtle_camera_tracking and slime != null and _touch_mode == TouchMode.NONE:
+			track_yaw_bonus = clampf(slime.global_position.x * 0.065, -0.14, 0.14)
+		camera_pivot.rotation.y = lerpf(camera_pivot.rotation.y, _target_cam_yaw + track_yaw_bonus, minf(1.0, delta * 6.5))
+		camera_pivot.rotation.x = lerpf(camera_pivot.rotation.x, _target_cam_pitch, minf(1.0, delta * 6.5))
 
 
 func reset_camera_view() -> void:
@@ -74,7 +83,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			handle_pointer_move(sd.position, sd.relative)
 		return
 
-	# مسار الفأرة الاحتياطي إذا كان emulate_touch_from_mouse معطلاً
 	if not _emulate_touch:
 		if event is InputEventMouseButton:
 			var mb := event as InputEventMouseButton
@@ -100,6 +108,18 @@ func handle_pointer_down(screen_pos: Vector2) -> void:
 	_press_time_msec = Time.get_ticks_msec()
 	_accum_drag_px = 0.0
 	_pet_dist_px = 0.0
+	_hit_part_id = &""
+
+	# أولاً: نفحص إصابة الإكسسوارات الدقيقة (القرنان، القبعة، الكرة البيضاء، الزهرة)
+	var part_hit: Dictionary = raycast_accessory_part(screen_pos)
+	if not part_hit.is_empty():
+		var area_obj: Object = part_hit.get("collider")
+		if area_obj is Node and (area_obj as Node).has_meta("slimi_part"):
+			_hit_part_id = (area_obj as Node).get_meta("slimi_part")
+			_press_hit_world = part_hit.get("position", Vector3.ZERO)
+			_press_hit_normal = part_hit.get("normal", Vector3.FORWARD)
+			_touch_mode = TouchMode.ON_SLIME_PART
+			return
 
 	var hit: Dictionary = raycast_from_screen(screen_pos)
 	if hit.is_empty():
@@ -123,6 +143,13 @@ func handle_pointer_move(screen_pos: Vector2, relative: Vector2) -> void:
 		step_len = screen_pos.distance_to(_last_screen_pos)
 	_last_screen_pos = screen_pos
 	_accum_drag_px += step_len
+
+	if _touch_mode == TouchMode.ON_SLIME_PART and slime != null:
+		if step_len > 8.0 and _pet_dist_px == 0.0:
+			_pet_dist_px = 1.0
+			slime.on_part_touched(_hit_part_id, _press_hit_world, _press_hit_normal)
+			slime_part_touched.emit(_hit_part_id, _press_hit_world)
+		return
 
 	if _touch_mode == TouchMode.ON_SLIME and slime != null:
 		var hit: Dictionary = raycast_from_screen(screen_pos)
@@ -155,6 +182,13 @@ func handle_pointer_move(screen_pos: Vector2, relative: Vector2) -> void:
 
 
 func handle_pointer_up(screen_pos: Vector2) -> void:
+	if _touch_mode == TouchMode.ON_SLIME_PART and slime != null:
+		if _pet_dist_px == 0.0:
+			slime.on_part_touched(_hit_part_id, _press_hit_world, _press_hit_normal)
+			slime_part_touched.emit(_hit_part_id, _press_hit_world)
+		_touch_mode = TouchMode.NONE
+		return
+
 	if _touch_mode == TouchMode.ON_SLIME and slime != null:
 		var held_on_slime_ms: int = Time.get_ticks_msec() - _press_time_msec
 		if slime.is_being_dragged:
@@ -191,18 +225,30 @@ func raycast_from_screen(screen_pos: Vector2) -> Dictionary:
 	if camera == null or slime == null:
 		return {}
 	var world_3d: World3D = slime.get_world_3d()
-	if world_3d == null:
-		return {}
-	var space_state: PhysicsDirectSpaceState3D = world_3d.direct_space_state
-	if space_state == null:
+	if world_3d == null or world_3d.direct_space_state == null:
 		return {}
 
 	var origin: Vector3 = camera.project_ray_origin(screen_pos)
 	var dir: Vector3 = camera.project_ray_normal(screen_pos)
-	var query := PhysicsRayQueryParameters3D.create(origin, origin + dir * 20.0)
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + dir * 20.0, 1)
 	query.collide_with_bodies = true
 	query.collide_with_areas = false
-	return space_state.intersect_ray(query)
+	return world_3d.direct_space_state.intersect_ray(query)
+
+
+func raycast_accessory_part(screen_pos: Vector2) -> Dictionary:
+	if camera == null or slime == null:
+		return {}
+	var world_3d: World3D = slime.get_world_3d()
+	if world_3d == null or world_3d.direct_space_state == null:
+		return {}
+
+	var origin: Vector3 = camera.project_ray_origin(screen_pos)
+	var dir: Vector3 = camera.project_ray_normal(screen_pos)
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + dir * 12.0, 2)
+	query.collide_with_bodies = false
+	query.collide_with_areas = true
+	return world_3d.direct_space_state.intersect_ray(query)
 
 
 func _project_onto_slime_plane(screen_pos: Vector2) -> Vector3:

@@ -243,13 +243,16 @@ func _test_main_scene_and_interactions(tree: SceneTree) -> void:
 	slime.toggle_nap()
 	assert_true(not slime.mood_system.is_sleeping, "إيقاظ سلايمي واستعادة النشاط")
 
-	# فحص مستويات الجودة الرسومية (منخفضة / متوسطة / عالية)
+	# فحص مستويات الجودة الرسومية القابلة للتدرج (LOW / MEDIUM / HIGH) مع مجسم رباعي خالٍ من الأقطاب
 	QualityManager.apply_preset(QualityManager.Preset.LOW, false)
-	var low_mesh := slime.body_mesh_instance.mesh as SphereMesh
-	assert_true(not room.sun_light.shadow_enabled and low_mesh.radial_segments == 24, "تطبيق المستوى المنخفض للأجهزة محدودة الموارد")
+	var low_mesh := slime.body_mesh_instance.mesh as ArrayMesh
+	var low_faces: int = low_mesh.get_faces().size() / 3 if low_mesh != null else 0
+	assert_true(not room.sun_light.shadow_enabled and low_faces == 1728, "تطبيق المستوى المنخفض للأجهزة محدودة الموارد (1728 مثلثاً دون ظلال)")
 
 	QualityManager.apply_preset(QualityManager.Preset.HIGH, false)
-	assert_true(room.sun_light.shadow_enabled and low_mesh.radial_segments == 48, "تطبيق المستوى العالي للجودة الرسومية")
+	var high_mesh := slime.body_mesh_instance.mesh as ArrayMesh
+	var high_faces: int = high_mesh.get_faces().size() / 3 if high_mesh != null else 0
+	assert_true(room.sun_light.shadow_enabled and high_faces == 9408, "تطبيق المستوى العالي للجودة الرسومية السينمائية (9408 مثلثات مع ظلال وRim Light)")
 	QualityManager.apply_preset(QualityManager.Preset.MEDIUM, false)
 
 	# فحص الواجهة العربية RTL وقابلية التوسع للغات أخرى
@@ -281,6 +284,9 @@ func _test_main_scene_and_interactions(tree: SceneTree) -> void:
 
 	# [5/5] الاختبارات العملية الشاملة لمعايير الرفيق الذكي الناطق (الأقسام 1 إلى 16)
 	await _test_intelligent_companion_systems(tree, main_inst, slime, hud, comp_hub)
+
+	# [6/6] اختبارات الترقية السينمائية فائقة الواقعية والـ 17 سيناريو إجهادياً (الأقسام A إلى M)
+	await SlimiCinematicCharacterQA.run_all(self, tree, slime, room, comp_hub)
 
 	main_inst.queue_free()
 	await tree.process_frame

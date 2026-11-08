@@ -41,11 +41,80 @@ jobs:
       - name: Verify Startup Scene Execution
         run: godot --headless --quit-after 30 --path .
 
-      - name: Run SLIMI Automated Test Suite
+      - name: Run SLIMI Automated QA & Stress Test Suite (163 Tests)
         run: godot --headless --path . res://tests/TestRunner.tscn
 
+  render-cinematic-showcase:
+    name: Render Multi-Angle Reference Views & Motion Video (OpenGL3)
+    needs: validate-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Install OpenGL3 Xvfb & FFmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils ffmpeg
+
+      - name: Download Godot 4.7.2-stable Linux
+        run: |
+          mkdir -p /tmp/godot
+          curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_RELEASE}/Godot_v${GODOT_RELEASE}_linux.x86_64.zip" -o /tmp/godot/godot.zip
+          unzip -q /tmp/godot/godot.zip -d /tmp/godot
+          chmod +x "/tmp/godot/Godot_v${GODOT_RELEASE}_linux.x86_64"
+          sudo ln -sf "/tmp/godot/Godot_v${GODOT_RELEASE}_linux.x86_64" /usr/local/bin/godot
+
+      - name: Render 5 Canonical Angles, Quality Presets & 180-Frame Motion Sequence
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          mkdir -p /tmp/slimi_renders/deliverables
+          godot --headless --import --path .
+          xvfb-run -a -s "-screen 0 1280x960x24" \
+            godot --audio-driver Dummy --rendering-driver opengl3 --resolution 1280x960 \
+            --path . res://scenes/slime/SlimiReferenceTurntable.tscn -- --capture-media=/tmp/slimi_renders
+
+          ls -lh /tmp/slimi_renders/*.png
+
+          # تجميع شريط الزوايا المرجعية الخمس الثابتة في لوحة مقارنة عالية الدقة
+          ffmpeg -y \
+            -i /tmp/slimi_renders/slimi_view_front.png \
+            -i /tmp/slimi_renders/slimi_view_side.png \
+            -i /tmp/slimi_renders/slimi_view_back.png \
+            -i /tmp/slimi_renders/slimi_view_three_quarter.png \
+            -i /tmp/slimi_renders/slimi_view_close_up.png \
+            -filter_complex "[0:v]scale=512:384[v0];[1:v]scale=512:384[v1];[2:v]scale=512:384[v2];[3:v]scale=512:384[v3];[4:v]scale=512:384[v4];[v0][v1][v2][v3][v4]hstack=inputs=5[out]" \
+            -map "[out]" /tmp/slimi_renders/deliverables/slimi_5_angle_turnaround.png
+
+          # تجميع لوحة التدرج البصري بين المستويات الثلاثة (LOW / MEDIUM / HIGH)
+          ffmpeg -y \
+            -i /tmp/slimi_renders/slimi_preset_low.png \
+            -i /tmp/slimi_renders/slimi_preset_medium.png \
+            -i /tmp/slimi_renders/slimi_preset_high.png \
+            -filter_complex "[0:v]scale=640:480[p0];[1:v]scale=640:480[p1];[2:v]scale=640:480[p2];[p0][p1][p2]hstack=inputs=3[pout]" \
+            -map "[pout]" /tmp/slimi_renders/deliverables/slimi_quality_presets_comparison.png
+
+          # ترميز فيديو استعراض الحركة السينمائي (6 ثوانٍ، 30fps، H.264 MP4)
+          ffmpeg -y -framerate 30 -i /tmp/slimi_renders/frames/frame_%04d.png \
+            -c:v libx264 -pix_fmt yuv420p -crf 19 -movflags +faststart \
+            /tmp/slimi_renders/deliverables/slimi_cinematic_showcase.mp4
+
+          cp /tmp/slimi_renders/slimi_view_*.png /tmp/slimi_renders/deliverables/
+          cp /tmp/slimi_renders/slimi_preset_*.png /tmp/slimi_renders/deliverables/
+          cp /tmp/slimi_renders/slimi_touch_dent_closeup.png /tmp/slimi_renders/deliverables/
+          ls -lh /tmp/slimi_renders/deliverables/
+
+      - name: Upload Multi-Angle Renders & Motion Video Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: slimi-cinematic-renders-and-video
+          path: /tmp/slimi_renders/deliverables/*
+          if-no-files-found: error
+          retention-days: 30
+
   export-android-debug:
-    name: Export Android Debug APK
+    name: Export Experimental Android Debug APK
     needs: validate-and-test
     runs-on: ubuntu-latest
     steps:
@@ -142,7 +211,7 @@ jobs:
 
           echo "::notice title=SLIMI APK Verified::File=slimi-debug.apk | Size=${APK_MB} (${APK_MIB} / ${APK_BYTES} bytes) | SHA256=${APK_SHA256} | Package=com.slimigame.slimi | MinSDK=26 | ABIs=arm64-v8a,armeabi-v7a | Signature=Verified | DefaultMode=OfflineFirst"
           {
-            echo "### SLIMI Android Debug APK Summary"
+            echo "### SLIMI Experimental Android Debug APK Summary"
             echo "- **File**: \`slimi-debug.apk\`"
             echo "- **Size**: ${APK_MB} (${APK_MIB} / ${APK_BYTES} bytes)"
             echo "- **SHA-256**: \`${APK_SHA256}\`"
@@ -150,7 +219,7 @@ jobs:
             echo "- **Min SDK**: 26 (Android 8.0+)"
             echo "- **ABIs**: \`arm64-v8a\`, \`armeabi-v7a\`"
             echo "- **Renderer**: \`gl_compatibility\`"
-            echo "- **AI Mode**: Offline-First Default + Optional Opt-In AI Online & Runtime-Gated Mic"
+            echo "- **Quality Default**: \`MEDIUM\` (Scalable \`LOW\` / \`MEDIUM\` / \`HIGH\`)"
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Upload APK Artifact

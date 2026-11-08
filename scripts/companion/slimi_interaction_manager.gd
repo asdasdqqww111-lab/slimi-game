@@ -303,15 +303,48 @@ func _apply_settings_to_voice(cfg: Dictionary) -> void:
 	AudioManager.set_bus_linear_volume("Voice", float(cfg.get("voice_volume", 0.92)), false)
 
 
-func _on_emotion_changed(_emotion_id: int, profile: Dictionary) -> void:
+func _on_emotion_changed(emotion_id: int, profile: Dictionary) -> void:
 	if slime != null:
+		var mapped_mouth: int = _resolve_mouth_shape_for_emotion(emotion_id)
+		var enriched_prof: Dictionary = profile.duplicate()
+		enriched_prof["mouth_shape"] = mapped_mouth
+		enriched_prof["focused_gaze"] = (emotion_id == SlimiEmotionManager.Emotion.CURIOUS or emotion_id == SlimiEmotionManager.Emotion.CONFIDENT)
+		if emotion_id == SlimiEmotionManager.Emotion.ANGRY or emotion_id == SlimiEmotionManager.Emotion.SHY:
+			enriched_prof["squint"] = 0.34
+		elif emotion_id == SlimiEmotionManager.Emotion.AFFECTIONATE or emotion_id == SlimiEmotionManager.Emotion.GRATEFUL:
+			enriched_prof["squint"] = 0.26
+
 		if slime.face_rig != null:
-			slime.face_rig.apply_emotion_profile(profile)
+			slime.face_rig.apply_emotion_profile(enriched_prof)
 		if slime.deformer != null:
 			slime.deformer.set_mood_tint(profile.get("tint", Color.WHITE))
 			slime.deformer.posture_height_scale = float(profile.get("posture", 1.0))
+			var tempo: float = float(profile.get("tempo", 1.0))
+			slime.deformer.set_breathing_cadence(1.85 * tempo, 0.032 * clampf(tempo, 0.72, 1.35))
+			slime.deformer.set_shape_key_weight(&"sad_droop", 0.55 if emotion_id == SlimiEmotionManager.Emotion.SAD else 0.0)
+			slime.deformer.set_shape_key_weight(&"happy_plump", 0.50 if emotion_id == SlimiEmotionManager.Emotion.EXCITED else 0.0)
 	if hud != null and hud.mood_label != null:
 		hud.mood_label.text = emotion_manager.get_localized_label(LocalizationManager.current_locale)
+
+
+func _resolve_mouth_shape_for_emotion(emotion_id: int) -> int:
+	match emotion_id:
+		SlimiEmotionManager.Emotion.EXCITED:
+			return SlimeFaceRig.MouthShape.LAUGHING
+		SlimiEmotionManager.Emotion.PLAYFUL, SlimiEmotionManager.Emotion.CONFIDENT:
+			return SlimeFaceRig.MouthShape.OPEN_SMILE
+		SlimiEmotionManager.Emotion.SAD, SlimiEmotionManager.Emotion.LONELY:
+			return SlimeFaceRig.MouthShape.SAD
+		SlimiEmotionManager.Emotion.SCARED, SlimiEmotionManager.Emotion.SURPRISED:
+			return SlimeFaceRig.MouthShape.SURPRISED
+		SlimiEmotionManager.Emotion.ANGRY, SlimiEmotionManager.Emotion.JEALOUS_PLAYFUL, SlimiEmotionManager.Emotion.FRUSTRATED:
+			return SlimeFaceRig.MouthShape.POUTING
+		SlimiEmotionManager.Emotion.SLEEPY, SlimiEmotionManager.Emotion.TIRED, SlimiEmotionManager.Emotion.CALM, SlimiEmotionManager.Emotion.BORED:
+			return SlimeFaceRig.MouthShape.RESTING
+		SlimiEmotionManager.Emotion.CURIOUS:
+			return SlimeFaceRig.MouthShape.SPEAKING_SMALL
+		_:
+			return SlimeFaceRig.MouthShape.SMILE
 
 
 func _on_lip_sync_updated(mouth_open: float, mouth_wide: float, brow_lift: float, speaking: bool) -> void:

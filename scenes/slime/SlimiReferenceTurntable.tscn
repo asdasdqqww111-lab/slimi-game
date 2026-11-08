@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://slimi_reference_turntable"]
+
+[ext_resource type="Script" path="res://scripts/slime/slimi_turntable_showcase.gd" id="1_turntable"]
+
+[node name="SlimiReferenceTurntable" type="Node3D"]
+script = ExtResource("1_turntable")

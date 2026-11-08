@@ -37,6 +37,10 @@ func _ready() -> void:
 	if slime != null and camera != null:
 		slime.look_target_world = camera.global_position
 
+	if slime != null and slime.deformer != null and room != null:
+		var dirs: Dictionary = room.get_studio_light_directions()
+		slime.deformer.update_studio_light_directions(dirs["key"], dirs["fill"], dirs["rim"])
+
 	if touch_system != null:
 		touch_system.camera_pivot = camera_pivot
 		touch_system.camera = camera

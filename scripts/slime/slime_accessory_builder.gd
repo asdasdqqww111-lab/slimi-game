@@ -1,8 +1,11 @@
 class_name SlimeAccessoryBuilder
 extends RefCounted
-## يبني تفاصيل شخصية سلايمي المرجعية بدقة ثلاثية الأبعاد عالية:
-## قرن النجمة الهلامي الوردي، القبعة الصوفية الصفراء المحبوكة مع الكرة البيضاء والوردة الملونة والقلب،
-## الكفّان الهلاميان اللامعان على البطن، والفقاعات الهلامية المعلقة داخل الجسم.
+## يبني إكسسوارات شخصية SLIMI المرجعية بدقة سينمائية عالية مع مناطق لمس مستقلة لكل جزء:
+## - قرنا الاستشعار الشفافان (StarAntenna + RightFeeler)
+## - القبعة الصوفية الصفراء المحبوكة ذات الحافة المضلعة
+## - الكرة الصوفية البيضاء المنفوشة (PomPom)
+## - الزهرة الملونة سداسية البتلات الدقيقة (YarnFlower) ودبوس القلب
+## - الكفّان الهلاميان والفقاعات الداخلية.
 
 
 static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
@@ -11,14 +14,18 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 		return refs
 
 	var jelly_acc_mat := _create_glossy_jelly_part_material()
-	var knit_dome_mat := _create_knit_material(26.0, 20.0)
-	var knit_cuff_mat := _create_knit_material(36.0, 14.0)
+	var knit_dome_mat := _create_knit_material(28.0, 24.0)
+	var knit_cuff_mat := _create_knit_material(38.0, 16.0)
 	var bubble_mat := _create_bubble_material()
 
-	# 1. قرن النجمة الهلامي الوردي اللامع (أعلى يسار الرأس كما في الصورة المرجعية)
+	refs["knit_dome_mat"] = knit_dome_mat
+	refs["knit_cuff_mat"] = knit_cuff_mat
+	refs["jelly_acc_mat"] = jelly_acc_mat
+
+	# 1a. قرن الاستشعار الهلامي الأيسر مع نجمة القمة + مفصل انحناء مرن (MidBendJoint)
 	var antenna_root := Node3D.new()
 	antenna_root.name = "StarAntenna"
-	antenna_root.position = Vector3(-0.185, 0.415, 0.05)
+	antenna_root.position = SlimiIdentitySpec.LEFT_ANTENNA_ANCHOR
 	visual_root.add_child(antenna_root)
 
 	var stalk_inst := MeshInstance3D.new()
@@ -41,14 +48,16 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 	star_inst.material_override = jelly_acc_mat
 	star_pivot.add_child(star_inst)
 
+	_attach_part_hit_area(antenna_root, &"left_antenna", Vector3(-0.18, 0.14, 0.04), 0.16)
+
 	refs["antenna_root"] = antenna_root
 	refs["star_pivot"] = star_pivot
 
-	# 1b. قرن الاستشعار الهلامي الشفاف الثاني (يطل بلطف من جانب القبعة لتحقيق قرني الاستشعار الشفافين)
+	# 1b. قرن الاستشعار الهلامي الشفاف الأيمن المستقل
 	var right_feeler := Node3D.new()
 	right_feeler.name = "RightFeeler"
-	right_feeler.position = Vector3(0.065, 0.455, 0.145)
-	right_feeler.scale = Vector3(-0.62, 0.62, 0.62)
+	right_feeler.position = SlimiIdentitySpec.RIGHT_ANTENNA_ANCHOR
+	right_feeler.scale = Vector3(-0.64, 0.64, 0.64)
 	right_feeler.rotation_degrees = Vector3(-12.0, -10.0, -14.0)
 	visual_root.add_child(right_feeler)
 
@@ -63,22 +72,23 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 	r_bulb.name = "RightFeelerTip"
 	r_bulb.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var tip_sphere := SphereMesh.new()
-	tip_sphere.radius = 0.056
-	tip_sphere.height = 0.112
-	tip_sphere.radial_segments = 16
-	tip_sphere.rings = 10
+	tip_sphere.radius = 0.058
+	tip_sphere.height = 0.116
+	tip_sphere.radial_segments = 18
+	tip_sphere.rings = 12
 	r_bulb.mesh = tip_sphere
 	r_bulb.position = Vector3(-0.315, 0.055, 0.055)
 	r_bulb.material_override = jelly_acc_mat
 	right_feeler.add_child(r_bulb)
 
+	_attach_part_hit_area(right_feeler, &"right_antenna", Vector3(-0.18, 0.12, 0.04), 0.18)
 	refs["right_feeler"] = right_feeler
 
-	# 2. القبعة الصوفية الصفراء المحبوكة المائلة بلطف (أعلى يمين الرأس)
+	# 2. القبعة الصوفية الصفراء المحبوكة بدقة عالية
 	var beanie_root := Node3D.new()
 	beanie_root.name = "KnitBeanie"
-	beanie_root.position = Vector3(0.185, 0.405, 0.015)
-	beanie_root.rotation_degrees = Vector3(5.0, -8.0, -24.0)
+	beanie_root.position = SlimiIdentitySpec.BEANIE_ANCHOR
+	beanie_root.rotation_degrees = SlimiIdentitySpec.BEANIE_BASE_ROT_DEG
 	visual_root.add_child(beanie_root)
 
 	var dome_inst := MeshInstance3D.new()
@@ -88,8 +98,8 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 	dome_mesh.radius = 0.315
 	dome_mesh.height = 0.47
 	dome_mesh.is_hemisphere = true
-	dome_mesh.radial_segments = 36
-	dome_mesh.rings = 18
+	dome_mesh.radial_segments = 42
+	dome_mesh.rings = 22
 	dome_inst.mesh = dome_mesh
 	dome_inst.position = Vector3(0.0, -0.01, 0.0)
 	dome_inst.material_override = knit_dome_mat
@@ -101,42 +111,45 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 	var cuff_torus := TorusMesh.new()
 	cuff_torus.inner_radius = 0.225
 	cuff_torus.outer_radius = 0.365
-	cuff_torus.rings = 36
-	cuff_torus.ring_segments = 18
+	cuff_torus.rings = 42
+	cuff_torus.ring_segments = 20
 	cuff_inst.mesh = cuff_torus
 	cuff_inst.scale = Vector3(1.04, 1.38, 0.98)
 	cuff_inst.position = Vector3(0.0, 0.015, 0.0)
 	cuff_inst.material_override = knit_cuff_mat
 	beanie_root.add_child(cuff_inst)
 
-	# الكرة الصوفية البيضاء المنفوشة أعلى القبعة (Fluffy Pom-Pom)
+	_attach_part_hit_area(beanie_root, &"beanie_hat", Vector3(0.0, 0.08, 0.02), 0.28)
+
+	# الكرة الصوفية البيضاء المنفوشة (Pom-Pom)
 	var pom_root := Node3D.new()
 	pom_root.name = "PomPom"
-	pom_root.position = Vector3(0.0, 0.275, -0.01)
+	pom_root.position = SlimiIdentitySpec.POMPOM_LOCAL_ANCHOR
 	beanie_root.add_child(pom_root)
 
-	var pom_mat := _create_soft_unshaded_mat(Color(1.0, 0.985, 0.98, 1.0), Color(0.95, 0.91, 0.94, 1.0))
+	var pom_mat := _create_soft_unshaded_mat(Color(1.0, 0.988, 0.982, 1.0), Color(0.93, 0.89, 0.93, 1.0))
 	var pom_core := MeshInstance3D.new()
 	pom_core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var pom_sphere := SphereMesh.new()
 	pom_sphere.radius = 0.112
 	pom_sphere.height = 0.215
-	pom_sphere.radial_segments = 24
-	pom_sphere.rings = 14
+	pom_sphere.radial_segments = 26
+	pom_sphere.rings = 16
 	pom_core.mesh = pom_sphere
 	pom_core.material_override = pom_mat
 	pom_root.add_child(pom_core)
 
 	var tuft_mesh := SphereMesh.new()
-	tuft_mesh.radius = 0.048
-	tuft_mesh.height = 0.092
-	tuft_mesh.radial_segments = 12
-	tuft_mesh.rings = 8
+	tuft_mesh.radius = 0.046
+	tuft_mesh.height = 0.088
+	tuft_mesh.radial_segments = 14
+	tuft_mesh.rings = 10
 	var tuft_dirs: Array[Vector3] = [
-		Vector3(0.08, 0.04, 0.04), Vector3(-0.08, 0.04, 0.04),
-		Vector3(0.04, 0.08, 0.05), Vector3(-0.04, 0.08, -0.04),
-		Vector3(0.0, 0.095, 0.0), Vector3(0.07, -0.02, 0.07),
-		Vector3(-0.07, -0.02, 0.07), Vector3(0.0, 0.03, 0.09),
+		Vector3(0.082, 0.038, 0.042), Vector3(-0.082, 0.038, 0.042),
+		Vector3(0.042, 0.082, 0.048), Vector3(-0.042, 0.082, -0.042),
+		Vector3(0.0, 0.096, 0.0), Vector3(0.072, -0.018, 0.072),
+		Vector3(-0.072, -0.018, 0.072), Vector3(0.0, 0.032, 0.092),
+		Vector3(0.055, 0.045, -0.068), Vector3(-0.055, 0.045, -0.068),
 	]
 	for i in range(tuft_dirs.size()):
 		var t_inst := MeshInstance3D.new()
@@ -146,48 +159,53 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 		t_inst.material_override = pom_mat
 		pom_root.add_child(t_inst)
 
-	# وردة الخيوط الملونة على حافة القبعة (Yarn Flower Brooch)
+	_attach_part_hit_area(pom_root, &"pom_pom", Vector3.ZERO, 0.13)
+
+	# الزهرة الملونة عالية التفاصيل سداسية البتلات (ثابتة التثبيت بلا أي تداخل مع الحافة)
 	var flower_root := Node3D.new()
 	flower_root.name = "YarnFlower"
-	flower_root.position = Vector3(0.095, 0.085, 0.315)
+	flower_root.position = SlimiIdentitySpec.FLOWER_LOCAL_ANCHOR
 	flower_root.rotation_degrees = Vector3(-14.0, 16.0, 0.0)
 	beanie_root.add_child(flower_root)
 
 	var petal_colors: Array[Color] = [
-		Color(0.42, 0.86, 0.42, 1.0), # أخضر نعناعي
-		Color(0.68, 0.46, 0.96, 1.0), # بنفسجي ناعم
-		Color(1.0, 0.84, 0.28, 1.0),  # أصفر مشرق
-		Color(0.92, 0.70, 0.77, 1.0), # وردي دافئ
-	]
-	var petal_offsets: Array[Vector3] = [
-		Vector3(-0.042, 0.038, 0.0),
-		Vector3(0.042, 0.040, 0.0),
-		Vector3(0.044, -0.036, 0.0),
-		Vector3(-0.040, -0.038, 0.0),
+		Color(0.42, 0.88, 0.50, 1.0), # أخضر نعناعي
+		Color(0.70, 0.48, 0.97, 1.0), # بنفسجي ناعم
+		Color(1.0, 0.85, 0.28, 1.0),  # أصفر مشرق
+		Color(0.98, 0.56, 0.74, 1.0), # وردي دافئ
+		Color(0.50, 0.82, 0.99, 1.0), # سماوي باستيل
+		Color(1.0, 0.68, 0.46, 1.0),  # خوخي ناعم
 	]
 	var petal_sphere := SphereMesh.new()
-	petal_sphere.radius = 0.038
-	petal_sphere.height = 0.062
-	petal_sphere.radial_segments = 16
-	petal_sphere.rings = 10
+	petal_sphere.radius = 0.034
+	petal_sphere.height = 0.058
+	petal_sphere.radial_segments = 18
+	petal_sphere.rings = 12
+
 	for p_idx in range(petal_colors.size()):
+		var ang: float = TAU * float(p_idx) / float(petal_colors.size())
 		var p_inst := MeshInstance3D.new()
+		p_inst.name = "Petal_%d" % p_idx
 		p_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		p_inst.mesh = petal_sphere
-		p_inst.position = petal_offsets[p_idx]
-		p_inst.scale = Vector3(1.08, 0.96, 0.68)
-		p_inst.material_override = _create_soft_unshaded_mat(petal_colors[p_idx], petal_colors[p_idx].darkened(0.18))
+		p_inst.position = Vector3(cos(ang) * 0.048, sin(ang) * 0.048, 0.012)
+		p_inst.rotation = Vector3(0.08, 0.0, ang)
+		p_inst.scale = Vector3(1.18, 0.86, 0.62)
+		p_inst.material_override = _create_soft_unshaded_mat(petal_colors[p_idx], petal_colors[p_idx].darkened(0.20))
 		flower_root.add_child(p_inst)
 
 	var center_bead := MeshInstance3D.new()
+	center_bead.name = "FlowerCenterButton"
 	center_bead.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	center_bead.mesh = petal_sphere
-	center_bead.scale = Vector3(0.65, 0.65, 0.62)
-	center_bead.position = Vector3(0.002, 0.002, 0.016)
+	center_bead.scale = Vector3(0.76, 0.76, 0.68)
+	center_bead.position = Vector3(0.0, 0.0, 0.026)
 	center_bead.material_override = pom_mat
 	flower_root.add_child(center_bead)
 
-	# دبوس القلب الوردي اللامع على يمين حافة القبعة (Glossy Pink Heart Pin)
+	_attach_part_hit_area(flower_root, &"flower", Vector3(0.0, 0.0, 0.02), 0.095)
+
+	# دبوس القلب الوردي اللامع
 	var heart_inst := MeshInstance3D.new()
 	heart_inst.name = "HeartPin"
 	heart_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -199,11 +217,12 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 
 	refs["beanie_root"] = beanie_root
 	refs["pom_root"] = pom_root
+	refs["flower_root"] = flower_root
 
-	# 3. الكفّان الهلاميان اللامعان على البطن (Translucent Glossy Jelly Paws)
+	# 3. الكفّان الهلاميان اللامعان على البطن
 	var paws_anchor := Node3D.new()
 	paws_anchor.name = "JellyPaws"
-	paws_anchor.position = Vector3(0.0, -0.145, 0.545)
+	paws_anchor.position = SlimiIdentitySpec.PAWS_ANCHOR
 	visual_root.add_child(paws_anchor)
 
 	var bean_mesh := _build_bean_paw_mesh()
@@ -231,7 +250,7 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 	refs["left_paw"] = left_paw
 	refs["right_paw"] = right_paw
 
-	# 4. الفقاعات الهلامية اللامعة المعلقة داخل وحول حواف السلايم (Internal Glossy Bubbles)
+	# 4. الفقاعات الهلامية الداخلية المستقرة ترتيبياً (render_priority = 1)
 	var bubbles_root := Node3D.new()
 	bubbles_root.name = "InnerBubbles"
 	visual_root.add_child(bubbles_root)
@@ -269,34 +288,52 @@ static func build_reference_accessories(visual_root: Node3D) -> Dictionary:
 	return refs
 
 
+static func _attach_part_hit_area(parent: Node3D, part_id: StringName, local_offset: Vector3, radius: float) -> void:
+	var area := Area3D.new()
+	area.name = "PartHitArea"
+	area.collision_layer = 2
+	area.collision_mask = 0
+	area.monitoring = false
+	area.monitorable = true
+	area.set_meta("slimi_part", part_id)
+
+	var col := CollisionShape3D.new()
+	var sph := SphereShape3D.new()
+	sph.radius = radius
+	col.shape = sph
+	col.position = local_offset
+	area.add_child(col)
+	parent.add_child(area)
+
+
 static func _create_glossy_jelly_part_material() -> ShaderMaterial:
 	var mat := ShaderMaterial.new()
 	var sh := Shader.new()
 	sh.code = """
 shader_type spatial;
-render_mode blend_mix, depth_draw_always, cull_disabled, unshaded;
+render_mode blend_mix, depth_draw_always, cull_back, unshaded;
 
 void fragment() {
-	vec3 n = normalize(FRONT_FACING ? NORMAL : -NORMAL);
+	vec3 n = normalize(NORMAL);
 	vec3 v = normalize(VIEW);
 	float ndotv = clamp(dot(n, v), 0.0, 1.0);
-	float rim = pow(1.0 - ndotv, 1.95);
-	vec3 core_pink = vec3(1.0, 0.72, 0.87);
-	vec3 edge_pink = vec3(0.97, 0.38, 0.69);
-	vec3 col = mix(edge_pink, core_pink, smoothstep(0.12, 0.85, ndotv));
-	col = mix(col, vec3(1.0, 0.95, 0.99), rim * 0.68);
+	float rim = pow(1.0 - ndotv, 2.05);
+	vec3 core_pink = vec3(1.0, 0.74, 0.88);
+	vec3 edge_pink = vec3(0.96, 0.36, 0.68);
+	vec3 col = mix(edge_pink, core_pink, smoothstep(0.10, 0.86, ndotv));
+	col = mix(col, vec3(1.0, 0.96, 0.99), rim * 0.70);
 
 	vec3 key = normalize(vec3(-0.42, 0.66, 0.62));
-	float spec = smoothstep(0.92, 0.985, max(dot(n, normalize(key + v)), 0.0));
-	float soft_spec = pow(max(dot(n, normalize(key + v)), 0.0), 18.0) * 0.32;
-	col += vec3(1.0) * (spec * 0.95 + soft_spec);
+	float spec = smoothstep(0.93, 0.988, max(dot(n, normalize(key + v)), 0.0));
+	float soft_spec = pow(max(dot(n, normalize(key + v)), 0.0), 20.0) * 0.34;
+	col += vec3(1.0) * (spec * 0.96 + soft_spec);
 
 	ALBEDO = clamp(col, vec3(0.0), vec3(1.0));
-	ALPHA = clamp(0.76 + rim * 0.22 + spec * 0.24, 0.0, 0.98);
+	ALPHA = clamp(0.80 + rim * 0.16 + spec * 0.18, 0.0, 0.97);
 }
 """
 	mat.shader = sh
-	mat.render_priority = 2
+	mat.render_priority = 4
 	return mat
 
 
@@ -343,7 +380,7 @@ static func _build_curved_antenna_stalk() -> ArrayMesh:
 	var p2 := Vector3(-0.25, 0.26, 0.04)
 	var p3 := Vector3(-0.315, 0.06, 0.055)
 
-	var steps: int = 18
+	var steps: int = 20
 	var pts := PackedVector3Array()
 	var radii := PackedFloat32Array()
 	for i in range(steps + 1):
@@ -358,11 +395,10 @@ static func _build_curved_antenna_stalk() -> ArrayMesh:
 		pts.append(pt)
 		radii.append(lerpf(0.052, 0.021, pow(t, 0.75)))
 
-	return _extrude_variable_tube(pts, radii, 12)
+	return _extrude_variable_tube(pts, radii, 14)
 
 
 static func _build_bean_paw_mesh() -> ArrayMesh:
-	# كف هلامي ممتلئ بشكل حبة المارشملو/الفاصوليا اللطيفة كما في الصورة المرجعية
 	var steps: int = 14
 	var pts := PackedVector3Array()
 	var radii := PackedFloat32Array()
@@ -400,20 +436,16 @@ static func _build_plump_five_star_mesh(outer_r: float, inner_r: float, half_thi
 			fn = -fn
 		st.set_normal(Vector3(0.0, 0.0, 1.0))
 		st.add_vertex(front_center)
-		st.set_normal(fn)
-		st.add_vertex(a)
-		st.set_normal(fn)
-		st.add_vertex(b)
+		st.set_normal(fn); st.add_vertex(a)
+		st.set_normal(fn); st.add_vertex(b)
 
 		var bn: Vector3 = (a - b).cross(back_center - b).normalized()
 		if bn.z > 0.0:
 			bn = -bn
 		st.set_normal(Vector3(0.0, 0.0, -1.0))
 		st.add_vertex(back_center)
-		st.set_normal(bn)
-		st.add_vertex(b)
-		st.set_normal(bn)
-		st.add_vertex(a)
+		st.set_normal(bn); st.add_vertex(b)
+		st.set_normal(bn); st.add_vertex(a)
 
 	return st.commit()
 
@@ -435,19 +467,13 @@ static func _build_plump_heart_mesh(scale_size: float) -> ArrayMesh:
 	for i in range(segs):
 		var a: Vector3 = outline[i]
 		var b: Vector3 = outline[(i + 1) % segs]
-		st.set_normal(Vector3(0.0, 0.0, 1.0))
-		st.add_vertex(f_c)
-		st.set_normal(a.normalized() + Vector3(0.0, 0.0, 0.6))
-		st.add_vertex(a)
-		st.set_normal(b.normalized() + Vector3(0.0, 0.0, 0.6))
-		st.add_vertex(b)
+		st.set_normal(Vector3(0.0, 0.0, 1.0)); st.add_vertex(f_c)
+		st.set_normal((a.normalized() + Vector3(0.0, 0.0, 0.6)).normalized()); st.add_vertex(a)
+		st.set_normal((b.normalized() + Vector3(0.0, 0.0, 0.6)).normalized()); st.add_vertex(b)
 
-		st.set_normal(Vector3(0.0, 0.0, -1.0))
-		st.add_vertex(b_c)
-		st.set_normal(b.normalized() + Vector3(0.0, 0.0, -0.6))
-		st.add_vertex(b)
-		st.set_normal(a.normalized() + Vector3(0.0, 0.0, -0.6))
-		st.add_vertex(a)
+		st.set_normal(Vector3(0.0, 0.0, -1.0)); st.add_vertex(b_c)
+		st.set_normal((b.normalized() + Vector3(0.0, 0.0, -0.6)).normalized()); st.add_vertex(b)
+		st.set_normal((a.normalized() + Vector3(0.0, 0.0, -0.6)).normalized()); st.add_vertex(a)
 
 	return st.commit()
 
@@ -493,7 +519,6 @@ static func _extrude_variable_tube(points: PackedVector3Array, radii: PackedFloa
 			st.set_normal(norms[i + 1][ns]); st.add_vertex(rings[i + 1][ns])
 			st.set_normal(norms[i][ns]); st.add_vertex(rings[i][ns])
 
-	# Smooth rounded end caps
 	var start_c: Vector3 = points[0]
 	var end_c: Vector3 = points[count - 1]
 	for s in range(sides):
