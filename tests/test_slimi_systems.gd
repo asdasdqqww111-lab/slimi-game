@@ -61,7 +61,8 @@ func _test_project_and_export_config() -> void:
 		assert_true(str(cfg.get_value("preset.0.options", "gradle_build/min_sdk", "")) == "26", "استهداف Android 8.0 (API 26) وما بعده")
 		assert_true(bool(cfg.get_value("preset.0.options", "architectures/arm64-v8a", false)), "دعم معمارية arm64-v8a")
 		assert_true(bool(cfg.get_value("preset.0.options", "architectures/armeabi-v7a", false)), "دعم معمارية armeabi-v7a للأجهزة الاقتصادية")
-		assert_true(not bool(cfg.get_value("preset.0.options", "permissions/internet", true)), "اللعبة تعمل دون صلاحية إنترنت")
+		assert_true(bool(ProjectSettings.get_setting("audio/general/text_to_speech", false)), "تفعيل دعم النطق الصوتي TTS في إعدادات المحرك")
+		assert_true(bool(ProjectSettings.get_setting("audio/driver/enable_input", false)), "تفعيل دخل الميكروفون الاختياري المحمي بإذن المستخدم")
 
 
 func _test_audio_bank_and_manager() -> void:
@@ -263,18 +264,168 @@ func _test_main_scene_and_interactions(tree: SceneTree) -> void:
 	QualityManager.apply_preset(QualityManager.Preset.LOW, false)
 	var start_usec: int = Time.get_ticks_usec()
 	var bench_frames: int = 120
+	var comp_hub := main_inst.get_node_or_null("SlimiInteractionManager") as SlimiInteractionManager
 	for _f in range(bench_frames):
 		slime._physics_process(1.0 / 60.0)
 		slime.deformer._process(1.0 / 60.0)
 		slime.face_rig._process(1.0 / 60.0)
 		slime.mood_system._process(1.0 / 60.0)
-		ai._process(1.0 / 60.0)
+		if comp_hub != null:
+			comp_hub.behavior_ai._process(1.0 / 60.0)
+			comp_hub.anim_controller._process(1.0 / 60.0)
+			comp_hub.voice_manager._process(1.0 / 60.0)
 	var elapsed_ms: float = float(Time.get_ticks_usec() - start_usec) / 1000.0
 	var avg_cpu_ms: float = elapsed_ms / float(bench_frames)
-	print("  [PERF] متوسط زمن معالجة منطق وفيزياء وتشوه سلايمي لكل إطار: %.3f ms (الميزانية < 4.0 ms)" % avg_cpu_ms)
+	print("  [PERF] متوسط زمن معالجة منطق وفيزياء وتشوه سلايمي والرفيق الذكي لكل إطار: %.3f ms (الميزانية < 4.0 ms)" % avg_cpu_ms)
 	assert_true(avg_cpu_ms < 4.0, "كفاءة عالية لمعالجة الإطار على المعالجات محدودة الموارد")
+
+	# [5/5] الاختبارات العملية الشاملة لمعايير الرفيق الذكي الناطق (الأقسام 1 إلى 16)
+	await _test_intelligent_companion_systems(tree, main_inst, slime, hud, comp_hub)
 
 	main_inst.queue_free()
 	await tree.process_frame
 	var orphans: int = int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
 	assert_true(orphans == 0, "عدم وجود أي عقد يتيمة أو تسريب في الذاكرة (Orphan Nodes = 0)")
+
+
+func _test_intelligent_companion_systems(
+	tree: SceneTree,
+	_main_inst: Node3D,
+	slime: SlimeController,
+	hud: HUDController,
+	hub: SlimiInteractionManager
+) -> void:
+	print("\n[5/5] فحص منظومة الرفيق الذكي الناطق (الصوت، Lip-Sync، 20 شعوراً، الدردشة، الألعاب، الذاكرة، الخصوصية)...")
+	assert_true(hub != null, "تواجد منسق الأحداث الموحد SlimiInteractionManager")
+	if hub == null:
+		return
+
+	# 1. التحقق من قرني الاستشعار الشفافين والحواجب التعبيرية والهوية البصرية
+	var vis_root := slime.get_node_or_null("VisualRoot") as Node3D
+	assert_true(
+		vis_root.get_node_or_null("StarAntenna") != null and vis_root.get_node_or_null("RightFeeler") != null,
+		"تواجد قرني الاستشعار الشفافين (StarAntenna + RightFeeler) مع الحفاظ على القبعة الصفراء"
+	)
+	assert_true(
+		slime.face_rig.left_brow != null and slime.face_rig.right_brow != null,
+		"تواجد الحواجب التعبيرية ثلاثية الأبعاد (LeftBrow + RightBrow) لمزامنة المشاعر والكلام"
+	)
+
+	# 2. اختبار الصوت التعبيري وتوليد الكلام المقطعي الرقيق ومزامنة الفم (Lip-Sync)
+	var new_voice_cues: Array[StringName] = [
+		&"giggle_soft", &"laugh_long", &"joy_sparkle", &"sad_whimper",
+		&"surprise_gasp", &"bored_sigh", &"puzzled_hum", &"shy_squeak",
+		&"scared_tremble", &"kiss_mwah", &"proud_tada", &"jelly_wobble_soft",
+	]
+	var all_cues_valid: bool = true
+	for cid in new_voice_cues:
+		if not AudioManager.has_sound(cid):
+			all_cues_valid = false
+	assert_true(all_cues_valid, "توليد جميع الأصوات التعبيرية الرقيقة الـ 12 الإضافية بنجاح")
+
+	var sp_dur: float = hub.voice_manager.speak_text("مرحباً يا صديقي، أنا سلايمي السعيد!", hub.emotion_manager.get_profile())
+	assert_true(sp_dur > 0.4 and hub.voice_manager.is_speaking(), "بدء نطق جملة سلايمي وحساب المدة المقطعية")
+	hub.voice_manager._process(0.08)
+	assert_true(slime.face_rig.is_lip_syncing and slime.face_rig.lip_sync_open > 0.01, "تزامن فتح وإغلاق الفم والحواجب مع مقاطع الكلام (Lip-Sync)")
+	hub.voice_manager.set_muted(true)
+	assert_true(not hub.voice_manager.is_speaking() and not slime.face_rig.is_lip_syncing, "إيقاف الكلام ومزامنة الفم فوراً عند كتم الصوت")
+	hub.voice_manager.set_muted(false)
+
+	# 3. اختبار جميع المشاعر الـ 20 وتأثيرها الحي على الوجه والوقفة والملصق
+	assert_true(hub.emotion_manager.get_emotion_count() == 20, "دعم محرك المشاعر لجميع المشاعر الـ 20 المطلوبة كاملة")
+	var emotions_distinct_ok: bool = true
+	for em_idx in range(20):
+		hub.emotion_manager.set_emotion(em_idx, 3.0)
+		var prof: Dictionary = hub.emotion_manager.get_profile()
+		if str(prof.get("ar", "")).is_empty() or str(prof.get("en", "")).is_empty():
+			emotions_distinct_ok = false
+	assert_true(emotions_distinct_ok, "تطبيق جميع المشاعر الـ 20 على الوجه والوقفة والنبرة باللغتين العربية والإنجليزية")
+
+	# 4. اختبار معاملة المستخدم (الضغط الهلامي + التخويف والاطمئنان التدريجي)
+	slime.on_squished(slime.global_position, 1.0)
+	assert_true(hub.emotion_manager.current_emotion == SlimiEmotionManager.Emotion.SURPRISED, "استجابة سلايمي للضغط بمرونة هلامية ومفاجأة لطيفة")
+	slime.on_startled(slime.global_position + Vector3(0.0, 0.0, 1.0))
+	assert_true(hub.emotion_manager.current_emotion == SlimiEmotionManager.Emotion.SCARED, "استجابة سلايمي للتخويف بالتراجع الخجول واتساع العينين")
+	hub.emotion_manager.tick_emotion_decay(5.0, SlimiEmotionManager.Emotion.HAPPY)
+	assert_true(hub.emotion_manager.current_emotion == SlimiEmotionManager.Emotion.REASSURED, "عودة سلايمي تدريجياً لشعور الاطمئنان بعد الخوف")
+
+	# 5. اختبار جميع الحركات الـ 31 ونظام الأولوية لمنع تعارض الحركات
+	assert_true(hub.anim_controller.get_total_supported_actions_count() == 31, "دعم 31 حركة يومية وكوميدية وظريفة كاملة")
+	assert_true(hub.anim_controller.play_action(&"victory_celebration", SlimiAnimationController.Priority.MINIGAME), "تشغيل حركة الاحتفال ذات الأولوية العالية")
+	assert_true(not hub.anim_controller.play_action(&"idle_sway", SlimiAnimationController.Priority.IDLE_AMBIENT), "منع الحركات منخفضة الأولوية من مقاطعة الحركة النشطة (Priority Arbitration)")
+	hub.anim_controller._process(2.5)
+	assert_true(hub.anim_controller.current_action == &"", "انتهاء الحركة واستعادة الوقفة الطبيعية بنظافة")
+
+	# 6. اختبار الدردشة الذكية بالعربية والإنجليزية، فهم الحزن/الفرح، النكت غير المتكررة، وحل الألغاز
+	var name_reply: Dictionary = hub.send_user_chat_message("اسمي سارة")
+	assert_true(hub.memory_manager.user_nickname == "سارة" and str(name_reply.get("text", "")).contains("سارة"), "التعرف على اسم المستخدم وحفظه ومناداته به")
+
+	var sad_reply: Dictionary = hub.send_user_chat_message("أنا حزين وتعبان اليوم")
+	assert_true(int(sad_reply.get("emotion", -1)) == SlimiEmotionManager.Emotion.AFFECTIONATE, "فهم حزن المستخدم والرد بمواساة حنونة دافئة")
+
+	var en_reply: Dictionary = hub.send_user_chat_message("Hello SLIMI, I won today and I am super happy!")
+	assert_true(int(en_reply.get("emotion", -1)) == SlimiEmotionManager.Emotion.EXCITED and str(en_reply.get("text", "")).contains("Yay"), "فهم الرسائل الإنجليزية والاحتفال بفرح المستخدم")
+
+	var j1: String = str(hub.request_quick_entertainment("joke").get("text", ""))
+	var j2: String = str(hub.request_quick_entertainment("joke").get("text", ""))
+	var j3: String = str(hub.request_quick_entertainment("joke").get("text", ""))
+	assert_true(j1 != j2 and j2 != j3, "تقديم نكت متنوعة ومناسبة لكل الأعمار دون تكرار متتالٍ")
+
+	var rid: Dictionary = hub.request_quick_entertainment("riddle")
+	assert_true(not str(rid.get("text", "")).is_empty() and not hub.dialogue_manager._active_riddle.is_empty(), "طرح لغز تفاعلي وتذكر حالة اللغز في السياق")
+	var valid_ans: String = str(hub.dialogue_manager._active_riddle["answers"][0])
+	var rid_solve: Dictionary = hub.send_user_chat_message(valid_ans)
+	assert_true(hub.dialogue_manager._active_riddle.is_empty() and int(rid_solve.get("emotion", -1)) == SlimiEmotionManager.Emotion.EXCITED, "التحقق الذكي من حل اللغز والاحتفال بالإجابة الصحيحة")
+
+	var story_item: Dictionary = hub.request_quick_entertainment("story")
+	var skit_item: Dictionary = hub.request_quick_entertainment("skit")
+	assert_true(not str(story_item.get("text", "")).is_empty() and not str(skit_item.get("text", "")).is_empty(), "تقديم القصص القصيرة والمشاهد التمثيلية الظريفة")
+
+	# 7. اختبار عدم العتاب على الغياب والترحيب المتغير حسب الوقت
+	var morning_g: String = str(hub.dialogue_manager.build_launch_greeting("ar", 8, 0, "سارة", "pet", true).get("text", ""))
+	var night_g: String = str(hub.dialogue_manager.build_launch_greeting("ar", 23, 0, "سارة", "pet", true).get("text", ""))
+	assert_true(morning_g != night_g and not morning_g.contains("غبت") and not night_g.contains("تركتني"), "تغير الترحيب حسب الوقت وخلوه تماماً من أي عتاب أو ضغط عاطفي")
+
+	# 8. اختبار الذكاء السلوكي المستقل (Utility AI)
+	var util_scores: Dictionary = hub.behavior_ai.evaluate_utilities()
+	assert_true(util_scores.size() >= 5, "تقييم الأفعال الذاتية عبر Utility AI بناءً على الطاقة والفضول والملل")
+
+	# 9. اختبار جميع الألعاب المصغرة الـ 9 عملياً
+	var games: Array[Dictionary] = hub.minigames.get_supported_games()
+	assert_true(games.size() == 9, "تواجد جميع الألعاب المصغرة والتحديات الـ 9 المطلوبة")
+	for g_entry in games:
+		var gid: String = str(g_entry["id"])
+		var st: Dictionary = hub.minigames.start_game(gid, "ar")
+		assert_true(not str(st.get("prompt", "")).is_empty(), "بدء اللعبة المصغرة '%s' بنجاح" % gid)
+		# إكمال جولة في كل لعبة للتحقق من خلوها من أي أخطاء وقت التشغيل
+		var safety_steps: int = 0
+		while hub.minigames.is_active() and safety_steps < 5:
+			var target_choice: int = int(hub.minigames._state.get("target", 0))
+			if gid == "memory_sequence":
+				var seq_arr: Array = hub.minigames._state.get("seq", [0, 0, 0])
+				var p_idx: int = int(hub.minigames._state.get("progress", 0))
+				target_choice = int(seq_arr[p_idx])
+			hub.minigames.submit_choice(target_choice, "ar")
+			safety_steps += 1
+		assert_true(not hub.minigames.is_active(), "إتمام جولة اللعبة المصغرة '%s' وتفاعل سلايمي مع النتيجة" % gid)
+
+	# 10. اختبار الخصوصية: الميكروفون متوقف افتراضياً، يعمل المؤشر الحي عند التفعيل، ويتوقف فوراً
+	var mic_banner := hud.companion_ui.get("mic_banner") as Control
+	assert_true(not hub.is_mic_listening and mic_banner != null and not mic_banner.visible, "الميكروفون ومؤشره غير نشطين افتراضياً بدون إذن المستخدم")
+	hub._start_microphone_capture()
+	assert_true(hub.is_mic_listening and mic_banner.visible, "ظهور المؤشر الحي فوراً عند تفعيل الاستماع الصوتي")
+	hub.stop_microphone_listening(false)
+	assert_true(not hub.is_mic_listening and not mic_banner.visible, "إيقاف الميكروفون وإخفاء المؤشر فوراً عند إنهاء الاستماع")
+
+	# 11. اختبار حماية الأسرار ومسح الذاكرة والوضع الافتراضي Offline
+	assert_true(hub.settings_manager.ai_mode == "offline", "الوضع المحلي المجاني (Offline) هو الوضع الافتراضي")
+	assert_true(not hub.memory_manager.remember_chat_snippet("sk-secretApiKey123456"), "منع حفظ المفاتيح السرية وكلمات المرور في ذاكرة الدردشة")
+	hub.settings_manager.set_api_key_secure("sk-test-local-encrypted-only")
+	hub.settings_manager.persist()
+	var saved_cfg_plain: Dictionary = SaveManager.get_section("companion_settings")
+	assert_true(not saved_cfg_plain.has("api_key") and not JSON.stringify(saved_cfg_plain).contains("sk-test"), "عدم تخزين مفتاح API في ملفات الحفظ النصية المكشوفة وتشفيره محلياً فقط")
+	hub.settings_manager.set_api_key_secure("")
+
+	hub.memory_manager.clear_all_memory()
+	assert_true(hub.memory_manager.user_nickname.is_empty() and hub.memory_manager.saved_chat_snippets.is_empty(), "مسح ذاكرة SLIMI بالكامل بنجاح عبر زر المسح")
+	await tree.process_frame

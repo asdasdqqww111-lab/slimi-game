@@ -130,8 +130,8 @@ jobs:
             echo "::error title=ABI Check::Expected arm64-v8a and armeabi-v7a, got $(grep native-code /tmp/badging.txt || true)"
             exit 1
           fi
-          if grep -q "android.permission.INTERNET" /tmp/badging.txt; then
-            echo "::error title=Offline Check::Unexpected INTERNET permission found in APK"
+          if grep -Eq "android.permission.(CAMERA|ACCESS_FINE_LOCATION|READ_CONTACTS|READ_EXTERNAL_STORAGE)" /tmp/badging.txt; then
+            echo "::error title=Privacy Check::Unexpected invasive permission found in APK"
             exit 1
           fi
 
@@ -140,7 +140,7 @@ jobs:
           APK_MB=$(awk "BEGIN {printf \"%.2f MB\", ${APK_BYTES}/1000000}")
           APK_SHA256=$(sha256sum build/android/slimi-debug.apk | awk '{print $1}')
 
-          echo "::notice title=SLIMI APK Verified::File=slimi-debug.apk | Size=${APK_MB} (${APK_MIB} / ${APK_BYTES} bytes) | SHA256=${APK_SHA256} | Package=com.slimigame.slimi | MinSDK=26 | ABIs=arm64-v8a,armeabi-v7a | Signature=Verified | InternetPermission=None"
+          echo "::notice title=SLIMI APK Verified::File=slimi-debug.apk | Size=${APK_MB} (${APK_MIB} / ${APK_BYTES} bytes) | SHA256=${APK_SHA256} | Package=com.slimigame.slimi | MinSDK=26 | ABIs=arm64-v8a,armeabi-v7a | Signature=Verified | DefaultMode=OfflineFirst"
           {
             echo "### SLIMI Android Debug APK Summary"
             echo "- **File**: \`slimi-debug.apk\`"
@@ -150,7 +150,7 @@ jobs:
             echo "- **Min SDK**: 26 (Android 8.0+)"
             echo "- **ABIs**: \`arm64-v8a\`, \`armeabi-v7a\`"
             echo "- **Renderer**: \`gl_compatibility\`"
-            echo "- **Internet Permission**: None (100% Offline)"
+            echo "- **AI Mode**: Offline-First Default + Optional Opt-In AI Online & Runtime-Gated Mic"
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Upload APK Artifact
