@@ -1,5 +1,6 @@
 extends Node3D
-## المشهد الرئيسي للعبة SLIMI: يربط الشخصية ثلاثية الأبعاد، الغرفة، نظام اللمس، الواجهة العربية، والحفظ المحلي.
+## المشهد الرئيسي للعبة SLIMI: يربط الشخصية ثلاثية الأبعاد، منظومة الرفيق الذكي الناطق (10 وحدات معمارية)،
+## الغرفة، نظام اللمس، الواجهة العربية الزجاجية، والحفظ المحلي.
 
 var room: RoomEnvironment
 var slime: SlimeController
@@ -7,6 +8,7 @@ var camera_pivot: Node3D
 var camera: Camera3D
 var touch_system: TouchInteractionSystem
 var hud: HUDController
+var companion_hub: SlimiInteractionManager
 
 
 func _ready() -> void:
@@ -42,8 +44,15 @@ func _ready() -> void:
 		touch_system.room = room
 		touch_system.hud = hud
 
+	# إنشاء وربط منظومة الرفيق الذكي الموحدة (10 وحدات GDScript منفصلة متصلة بالإشارات)
+	companion_hub = SlimiInteractionManager.new()
+	companion_hub.name = "SlimiInteractionManager"
+	add_child(companion_hub)
+	companion_hub.bind_world(slime, hud)
+
 	if hud != null and slime != null:
 		hud.bind_slime_systems(slime.mood_system)
+		hud.bind_companion_system(companion_hub)
 		hud.feed_requested.connect(_on_feed_requested)
 		hud.play_requested.connect(_on_play_requested)
 		hud.nap_requested.connect(_on_nap_requested)
@@ -51,20 +60,15 @@ func _ready() -> void:
 
 	AndroidPlatformManager.back_requested.connect(_on_android_back)
 
-	# ترحيب ذكي يعكس الذاكرة المحلية لسلايمي
+	# ترحيب ذكي متغير حسب الوقت والمزاج والعلاقة دون أي عتاب على الغياب
 	call_deferred("_trigger_opening_greeting")
 
 
 func _trigger_opening_greeting() -> void:
-	if hud == null:
-		return
-	if SaveManager.is_first_launch:
+	if companion_hub != null:
+		companion_hub.trigger_contextual_launch_greeting()
+	elif hud != null:
 		hud.show_bubble_by_key("bubble_welcome_first", 4.5)
-	elif SaveManager.last_offline_seconds > 1800.0:
-		hud.show_bubble_by_key("bubble_missed_you", 4.2)
-	else:
-		hud.show_bubble_by_key("bubble_welcome_back", 3.8)
-	AudioManager.play_voice(&"happy_chirp", 0.0, -3.0)
 
 
 func _on_feed_requested() -> void:
@@ -79,6 +83,8 @@ func _on_feed_requested() -> void:
 func _on_play_requested() -> void:
 	if slime != null:
 		slime.play_together()
+	if companion_hub != null and companion_hub.anim_controller != null:
+		companion_hub.anim_controller.play_random_non_repeating_comedy(SlimiAnimationController.Priority.USER_REACTION)
 
 
 func _on_nap_requested() -> void:
@@ -91,6 +97,8 @@ func _on_call_requested() -> void:
 		touch_system.reset_camera_view()
 	if slime != null and camera != null:
 		slime.call_to_front(Vector3(0.0, 0.0, 0.55), camera.global_position)
+	if companion_hub != null:
+		companion_hub.emotion_manager.set_emotion(SlimiEmotionManager.Emotion.CURIOUS, 3.5)
 
 
 func _notification(what: int) -> void:
@@ -101,6 +109,8 @@ func _notification(what: int) -> void:
 	]:
 		if slime != null and slime.mood_system != null:
 			slime.mood_system.sync_to_save_manager()
+		if companion_hub != null:
+			companion_hub.save_companion_state()
 		SaveManager.save_to_disk()
 
 

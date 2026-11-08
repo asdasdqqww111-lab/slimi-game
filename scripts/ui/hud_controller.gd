@@ -68,6 +68,7 @@ var _current_mood_key: String = "mood_happy"
 var _cached_memory: SlimeMemory
 var _bubble_tween: Tween
 var _show_fps: bool = false
+var companion_ui: Dictionary = {}
 
 
 func _ready() -> void:
@@ -145,8 +146,21 @@ func bind_slime_systems(mood_sys: PersonalityMoodSystem) -> void:
 	_on_stats_updated(mood_sys.get_stats_snapshot())
 
 
+func bind_companion_system(companion: SlimiInteractionManager) -> void:
+	if companion == null:
+		return
+	companion_ui = CompanionUIBuilder.build_and_attach(self, companion)
+
+
 func has_open_modal() -> bool:
-	return (settings_modal != null and settings_modal.visible) or (memory_modal != null and memory_modal.visible)
+	var chat_m: Control = companion_ui.get("chat_modal") as Control
+	var games_m: Control = companion_ui.get("games_modal") as Control
+	return (
+		(settings_modal != null and settings_modal.visible)
+		or (memory_modal != null and memory_modal.visible)
+		or (chat_m != null and chat_m.visible)
+		or (games_m != null and games_m.visible)
+	)
 
 
 func is_point_blocked_by_ui(screen_pos: Vector2) -> bool:
@@ -167,6 +181,12 @@ func close_modals() -> void:
 		settings_modal.visible = false
 	if memory_modal != null:
 		memory_modal.visible = false
+	var chat_m: Control = companion_ui.get("chat_modal") as Control
+	if chat_m != null:
+		chat_m.visible = false
+	var games_m: Control = companion_ui.get("games_modal") as Control
+	if games_m != null:
+		games_m.visible = false
 
 
 func show_bubble_by_key(text_key: String, duration: float = 3.6) -> void:
@@ -361,20 +381,20 @@ func _connect_signals() -> void:
 		btn_settings.pressed.connect(func() -> void:
 			_animate_button_bounce(btn_settings)
 			AudioManager.play_sfx(&"ui_click")
-			if memory_modal != null:
-				memory_modal.visible = false
+			var next_vis: bool = not (settings_modal != null and settings_modal.visible)
+			close_modals()
 			if settings_modal != null:
-				settings_modal.visible = not settings_modal.visible
+				settings_modal.visible = next_vis
 		)
 	if btn_memory != null:
 		btn_memory.pressed.connect(func() -> void:
 			_animate_button_bounce(btn_memory)
 			AudioManager.play_sfx(&"ui_click")
 			_refresh_memory_labels()
-			if settings_modal != null:
-				settings_modal.visible = false
+			var next_vis: bool = not (memory_modal != null and memory_modal.visible)
+			close_modals()
 			if memory_modal != null:
-				memory_modal.visible = not memory_modal.visible
+				memory_modal.visible = next_vis
 		)
 
 	if btn_close_settings != null:

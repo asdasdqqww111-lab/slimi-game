@@ -156,12 +156,17 @@ func handle_pointer_move(screen_pos: Vector2, relative: Vector2) -> void:
 
 func handle_pointer_up(screen_pos: Vector2) -> void:
 	if _touch_mode == TouchMode.ON_SLIME and slime != null:
+		var held_on_slime_ms: int = Time.get_ticks_msec() - _press_time_msec
 		if slime.is_being_dragged:
 			slime.on_pull_release()
 			slime_touched.emit(&"pull_release", slime.global_position)
 		elif _accum_drag_px < TAP_MAX_DRAG_PX:
-			slime.on_poked(_press_hit_world, _press_hit_normal)
-			slime_touched.emit(&"poke", _press_hit_world)
+			if held_on_slime_ms >= 480:
+				slime.on_squished(_press_hit_world, 1.0)
+				slime_touched.emit(&"squish", _press_hit_world)
+			else:
+				slime.on_poked(_press_hit_world, _press_hit_normal)
+				slime_touched.emit(&"poke", _press_hit_world)
 
 	elif _touch_mode == TouchMode.ON_ROOM:
 		var held_ms: int = Time.get_ticks_msec() - _press_time_msec

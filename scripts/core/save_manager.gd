@@ -79,6 +79,11 @@ func mark_dirty() -> void:
 	_dirty = true
 
 
+func set_section(section: String, values: Dictionary) -> void:
+	current_data[section] = values.duplicate(true)
+	_dirty = true
+
+
 func update_section(section: String, values: Dictionary) -> void:
 	if not current_data.has(section) or typeof(current_data[section]) != TYPE_DICTIONARY:
 		current_data[section] = {}
@@ -190,8 +195,12 @@ func _try_read_json(path: String) -> Dictionary:
 
 
 func _merge_with_defaults(source: Dictionary, target_defaults: Dictionary) -> void:
-	for key in target_defaults.keys():
-		if not source.has(key):
+	for key in source.keys():
+		if not target_defaults.has(key):
+			if typeof(source[key]) == TYPE_DICTIONARY:
+				target_defaults[key] = (source[key] as Dictionary).duplicate(true)
+			else:
+				target_defaults[key] = source[key]
 			continue
 		if typeof(target_defaults[key]) == TYPE_DICTIONARY and typeof(source[key]) == TYPE_DICTIONARY:
 			_merge_with_defaults(source[key], target_defaults[key])
