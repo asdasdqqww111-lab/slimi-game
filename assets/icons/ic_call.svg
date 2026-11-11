@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="heartCall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFA6D2"/>
+      <stop offset="100%" stop-color="#FF529A"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 52 C32 52 13 39 13 25 C13 17 20 12 27 15 C30 16 32 19 32 19 C32 19 34 16 37 15 C44 12 51 17 51 25 C51 39 32 52 32 52 Z" fill="url(#heartCall)" stroke="#FFFFFF" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M8 22 C5 28 5 35 8 41" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <path d="M56 22 C59 28 59 35 56 41" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="24" cy="23" rx="4" ry="2.5" transform="rotate(-25 24 23)" fill="#FFFFFF" opacity="0.8"/>
+</svg>

@@ -1,0 +1,200 @@
+[gd_scene load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scripts/slime/slime_controller.gd" id="1_ctrl"]
+[ext_resource type="Material" path="res://materials/slime_body_material.tres" id="2_body_mat"]
+[ext_resource type="Script" path="res://scripts/slime/slime_face_rig.gd" id="3_face"]
+[ext_resource type="Material" path="res://materials/slime_eye_sclera_mat.tres" id="4_sclera"]
+[ext_resource type="Material" path="res://materials/slime_eye_iris_mat.tres" id="5_iris"]
+[ext_resource type="Material" path="res://materials/slime_eye_pupil_mat.tres" id="6_pupil"]
+[ext_resource type="Material" path="res://materials/slime_eye_highlight_mat.tres" id="7_hi"]
+[ext_resource type="Material" path="res://materials/slime_blush_mat.tres" id="8_blush"]
+[ext_resource type="Material" path="res://materials/slime_mouth_mat.tres" id="9_mouth"]
+[ext_resource type="Script" path="res://scripts/slime/slime_deformer.gd" id="10_deform"]
+[ext_resource type="Script" path="res://scripts/slime/personality_mood_system.gd" id="11_mood"]
+[ext_resource type="Resource" path="res://resources/slime_default_personality.tres" id="12_pers"]
+[ext_resource type="Script" path="res://scripts/ai/autonomous_behavior_ai.gd" id="13_ai"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+radius = 0.56
+
+[sub_resource type="SphereMesh" id="SphereMesh_body"]
+radius = 0.56
+height = 1.06
+radial_segments = 48
+rings = 34
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_shadow"]
+top_radius = 0.58
+bottom_radius = 0.62
+height = 0.006
+radial_segments = 32
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shadow"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.58, 0.28, 0.46, 0.24)
+
+[sub_resource type="SphereMesh" id="SphereMesh_droplet"]
+radius = 0.095
+height = 0.23
+radial_segments = 18
+rings = 12
+
+[sub_resource type="SphereMesh" id="SphereMesh_unit"]
+radius = 0.095
+height = 0.19
+radial_segments = 28
+rings = 18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lid"]
+shading_mode = 0
+albedo_color = Color(0.99, 0.66, 0.84, 1)
+
+[node name="Slimi" type="CharacterBody3D"]
+script = ExtResource("1_ctrl")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 0)
+shape = SubResource("SphereShape3D_body")
+
+[node name="BlobShadow" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.012, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_shadow")
+surface_material_override/0 = SubResource("StandardMaterial3D_shadow")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.49, 0)
+
+[node name="SlimeBodyMesh" type="MeshInstance3D" parent="VisualRoot"]
+cast_shadow = 1
+mesh = SubResource("SphereMesh_body")
+surface_material_override/0 = ExtResource("2_body_mat")
+
+[node name="DropletCrown" type="Node3D" parent="VisualRoot"]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.53, 0)
+
+[node name="DropletMesh" type="MeshInstance3D" parent="VisualRoot/DropletCrown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+mesh = SubResource("SphereMesh_droplet")
+surface_material_override/0 = ExtResource("2_body_mat")
+
+[node name="FaceAnchor" type="Node3D" parent="VisualRoot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0.52)
+script = ExtResource("3_face")
+
+[node name="LeftEye" type="Node3D" parent="VisualRoot/FaceAnchor"]
+transform = Transform3D(0.965926, 0.0225576, -0.257834, 0, 0.996195, 0.0871557, 0.258819, -0.084186, 0.96225, -0.185, 0.08, 0.025)
+
+[node name="Sclera" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/LeftEye"]
+transform = Transform3D(1, 0, 0, 0, 1.08, 0, 0, 0, 0.36, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("4_sclera")
+
+[node name="IrisGroup" type="Node3D" parent="VisualRoot/FaceAnchor/LeftEye"]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.024)
+
+[node name="Iris" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/LeftEye/IrisGroup"]
+transform = Transform3D(0.76, 0, 0, 0, 0.86, 0, 0, 0, 0.28, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("5_iris")
+
+[node name="Pupil" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/LeftEye/IrisGroup"]
+transform = Transform3D(0.5, 0, 0, 0, 0.56, 0, 0, 0, 0.24, 0, 0, 0.012)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("6_pupil")
+
+[node name="HighlightBig" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/LeftEye/IrisGroup"]
+transform = Transform3D(0.24, 0, 0, 0, 0.24, 0, 0, 0, 0.16, -0.024, 0.028, 0.022)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("7_hi")
+
+[node name="HighlightSmall" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/LeftEye/IrisGroup"]
+transform = Transform3D(0.12, 0, 0, 0, 0.12, 0, 0, 0, 0.14, 0.022, -0.024, 0.022)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("7_hi")
+
+[node name="UpperLid" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/LeftEye"]
+visible = false
+transform = Transform3D(1.12, 0, 0, 0, 0.55, 0, 0, 0, 0.5, 0, 0.065, 0.025)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = SubResource("StandardMaterial3D_lid")
+
+[node name="RightEye" type="Node3D" parent="VisualRoot/FaceAnchor"]
+transform = Transform3D(0.965926, -0.0225576, 0.257834, 0, 0.996195, 0.0871557, -0.258819, -0.084186, 0.96225, 0.185, 0.08, 0.025)
+
+[node name="Sclera" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/RightEye"]
+transform = Transform3D(1, 0, 0, 0, 1.08, 0, 0, 0, 0.36, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("4_sclera")
+
+[node name="IrisGroup" type="Node3D" parent="VisualRoot/FaceAnchor/RightEye"]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.024)
+
+[node name="Iris" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/RightEye/IrisGroup"]
+transform = Transform3D(0.76, 0, 0, 0, 0.86, 0, 0, 0, 0.28, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("5_iris")
+
+[node name="Pupil" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/RightEye/IrisGroup"]
+transform = Transform3D(0.5, 0, 0, 0, 0.56, 0, 0, 0, 0.24, 0, 0, 0.012)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("6_pupil")
+
+[node name="HighlightBig" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/RightEye/IrisGroup"]
+transform = Transform3D(0.24, 0, 0, 0, 0.24, 0, 0, 0, 0.16, -0.024, 0.028, 0.022)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("7_hi")
+
+[node name="HighlightSmall" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/RightEye/IrisGroup"]
+transform = Transform3D(0.12, 0, 0, 0, 0.12, 0, 0, 0, 0.14, 0.022, -0.024, 0.022)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("7_hi")
+
+[node name="UpperLid" type="MeshInstance3D" parent="VisualRoot/FaceAnchor/RightEye"]
+visible = false
+transform = Transform3D(1.12, 0, 0, 0, 0.55, 0, 0, 0, 0.5, 0, 0.065, 0.025)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = SubResource("StandardMaterial3D_lid")
+
+[node name="LeftCheek" type="MeshInstance3D" parent="VisualRoot/FaceAnchor"]
+transform = Transform3D(0.898794, 0, -0.438371, 0, 0.62, 0, 0.438371, 0, 0.314578, -0.285, -0.04, 0.01)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("8_blush")
+
+[node name="RightCheek" type="MeshInstance3D" parent="VisualRoot/FaceAnchor"]
+transform = Transform3D(0.898794, 0, 0.438371, 0, 0.62, 0, -0.438371, 0, 0.314578, 0.285, -0.04, 0.01)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_unit")
+surface_material_override/0 = ExtResource("8_blush")
+
+[node name="Mouth" type="MeshInstance3D" parent="VisualRoot/FaceAnchor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.018, 0.072)
+cast_shadow = 0
+material_override = ExtResource("9_mouth")
+
+[node name="SlimeDeformer" type="Node" parent="."]
+script = ExtResource("10_deform")
+
+[node name="PersonalityMoodSystem" type="Node" parent="."]
+script = ExtResource("11_mood")
+personality = ExtResource("12_pers")
+
+[node name="AutonomousBehaviorAI" type="Node" parent="."]
+script = ExtResource("13_ai")

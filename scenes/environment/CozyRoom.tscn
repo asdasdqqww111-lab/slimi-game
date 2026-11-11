@@ -1,0 +1,218 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Script" path="res://scripts/environment/room_environment.gd" id="1_room"]
+[ext_resource type="Environment" path="res://resources/room_environment_env.tres" id="2_env"]
+[ext_resource type="Material" path="res://materials/room_floor_mat.tres" id="3_floor"]
+[ext_resource type="Material" path="res://materials/room_wall_mat.tres" id="4_wall"]
+[ext_resource type="Material" path="res://materials/room_rug_mat.tres" id="5_rug"]
+[ext_resource type="Material" path="res://materials/room_cushion_mat.tres" id="6_cushion"]
+[ext_resource type="Material" path="res://materials/room_accent_mat.tres" id="7_accent"]
+[ext_resource type="Shader" path="res://materials/shaders/magical_room_backdrop.gdshader" id="8_backdrop_sh"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_magical_sky"]
+shader = ExtResource("8_backdrop_sh")
+
+[sub_resource type="QuadMesh" id="QuadMesh_sky_backdrop"]
+size = Vector2(18, 14)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(8, 0.2, 8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(8, 0.2, 8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
+size = Vector3(8, 3.6, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
+size = Vector3(0.2, 3.6, 7.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_window"]
+size = Vector3(2.2, 1.5, 0.05)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rug"]
+top_radius = 1.85
+bottom_radius = 1.9
+height = 0.018
+radial_segments = 36
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pouf"]
+top_radius = 0.44
+bottom_radius = 0.48
+height = 0.24
+radial_segments = 24
+
+[sub_resource type="TorusMesh" id="TorusMesh_bowl_rim"]
+inner_radius = 0.16
+outer_radius = 0.25
+rings = 20
+ring_segments = 12
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_bowl_base"]
+top_radius = 0.22
+bottom_radius = 0.24
+height = 0.08
+radial_segments = 20
+
+[sub_resource type="SphereMesh" id="SphereMesh_ball"]
+radius = 0.18
+height = 0.36
+radial_segments = 20
+rings = 14
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pot"]
+top_radius = 0.22
+bottom_radius = 0.17
+height = 0.34
+radial_segments = 18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_leaf"]
+albedo_color = Color(0.62, 0.90, 0.76, 1)
+roughness = 0.55
+emission_enabled = true
+emission = Color(0.55, 0.88, 0.72, 1)
+emission_energy_multiplier = 0.42
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frame"]
+shading_mode = 0
+albedo_color = Color(1, 0.97, 0.99, 1)
+
+[node name="CozyRoom" type="Node3D"]
+script = ExtResource("1_room")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("2_env")
+
+[node name="MainSunLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.848048, 0.39457, -0.353661, 0, 0.667833, 0.744311, 0.529919, -0.631212, 0.566355, 0, 3.6, 0)
+light_color = Color(1, 0.98, 0.96, 1)
+light_energy = 0.85
+shadow_enabled = false
+shadow_opacity = 0.35
+directional_shadow_max_distance = 12.0
+
+[node name="WarmAccentLight" type="OmniLight3D" parent="."]
+visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 2.1, 1.5)
+light_color = Color(1, 0.86, 0.94, 1)
+light_energy = 0.42
+omni_range = 6.0
+
+[node name="MagicalSkyBackdrop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, -5.2)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_sky_backdrop")
+surface_material_override/0 = SubResource("ShaderMaterial_magical_sky")
+
+[node name="FloorBody" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorBody"]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="FloorMesh" type="MeshInstance3D" parent="FloorBody"]
+cast_shadow = 0
+mesh = SubResource("BoxMesh_floor")
+surface_material_override/0 = ExtResource("3_floor")
+
+[node name="Walls" type="Node3D" parent="."]
+
+[node name="BackWall" type="MeshInstance3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, -2.9)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_back_wall")
+surface_material_override/0 = ExtResource("4_wall")
+
+[node name="LeftWall" type="MeshInstance3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 1.7, 0.4)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_side_wall")
+surface_material_override/0 = ExtResource("4_wall")
+
+[node name="RightWall" type="MeshInstance3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 1.7, 0.4)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_side_wall")
+surface_material_override/0 = ExtResource("4_wall")
+
+[node name="WindowFrame" type="MeshInstance3D" parent="Walls"]
+transform = Transform3D(1.06, 0, 0, 0, 1.08, 0, 0, 0, 1, 0, 1.85, -2.78)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_window")
+surface_material_override/0 = SubResource("StandardMaterial3D_frame")
+
+[node name="SunlitWindow" type="MeshInstance3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.85, -2.75)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_window")
+surface_material_override/0 = SubResource("ShaderMaterial_magical_sky")
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="CenterRug" type="MeshInstance3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.009, 0.08)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_rug")
+surface_material_override/0 = ExtResource("5_rug")
+
+[node name="CozyCushion" type="MeshInstance3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.28, 0.12, -0.85)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_pouf")
+surface_material_override/0 = ExtResource("6_cushion")
+
+[node name="FoodBowl" type="Node3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 0, 0.55)
+
+[node name="BowlBase" type="MeshInstance3D" parent="Props/FoodBowl"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_bowl_base")
+surface_material_override/0 = ExtResource("7_accent")
+
+[node name="BowlRim" type="MeshInstance3D" parent="Props/FoodBowl"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_bowl_rim")
+surface_material_override/0 = ExtResource("7_accent")
+
+[node name="TreatAnchor" type="Marker3D" parent="Props/FoodBowl"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+
+[node name="ToyBall" type="MeshInstance3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.95, 0.18, 0.82)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_ball")
+surface_material_override/0 = ExtResource("7_accent")
+
+[node name="PastelPlant" type="Node3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0, -1.25)
+
+[node name="Pot" type="MeshInstance3D" parent="Props/PastelPlant"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_pot")
+surface_material_override/0 = ExtResource("6_cushion")
+
+[node name="SucculentCrown" type="MeshInstance3D" parent="Props/PastelPlant"]
+transform = Transform3D(1.2, 0, 0, 0, 1.1, 0, 0, 0, 1.2, 0, 0.42, 0)
+cast_shadow = 0
+mesh = SubResource("SphereMesh_ball")
+surface_material_override/0 = SubResource("StandardMaterial3D_leaf")
+
+[node name="PointsOfInterest" type="Node3D" parent="."]
+
+[node name="CushionPOI" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, 0, -0.52)
+
+[node name="BowlPOI" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.62, 0, 0.42)
+
+[node name="ToyBallPOI" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, 0, 0.58)
+
+[node name="PlantPOI" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0, -0.78)
+
+[node name="CenterPOI" type="Marker3D" parent="PointsOfInterest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.22)

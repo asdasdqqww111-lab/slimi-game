@@ -1,0 +1,357 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 980" width="1480" height="980">
+  <defs>
+    <linearGradient id="bgBoard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff4fa"/>
+      <stop offset="50%" stop-color="#f7eeff"/>
+      <stop offset="100%" stop-color="#eefaf6"/>
+    </linearGradient>
+    <linearGradient id="pastelSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8d6fc"/>
+      <stop offset="55%" stop-color="#fce0f2"/>
+      <stop offset="100%" stop-color="#fff3e8"/>
+    </linearGradient>
+    <linearGradient id="starSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#291f4d"/>
+      <stop offset="60%" stop-color="#483678"/>
+      <stop offset="100%" stop-color="#694d8c"/>
+    </linearGradient>
+    <linearGradient id="slimiPink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff8ec6"/>
+      <stop offset="100%" stop-color="#ee5398"/>
+    </linearGradient>
+    <linearGradient id="beanieGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe670"/>
+      <stop offset="100%" stop-color="#f0b829"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#45193b" flood-opacity="0.14"/>
+    </filter>
+    <!-- Reusable Mini 3D SLIMI Character Emblem -->
+    <g id="slimiHero">
+      <ellipse cx="0" cy="36" rx="44" ry="10" fill="#5e254d" opacity="0.14"/>
+      <path d="M-42,14 C-44,-22 -24,-40 0,-40 C24,-40 44,-22 42,14 C41,31 24,36 0,36 C-24,36 -41,31 -42,14 Z" fill="url(#slimiPink)"/>
+      <ellipse cx="-16" cy="-16" rx="12" ry="6" transform="rotate(-22 -16 -16)" fill="#ffffff" opacity="0.38"/>
+      <!-- Knit Beanie & Pom -->
+      <path d="M-34,-20 C-28,-46 28,-46 34,-20 Z" fill="url(#beanieGold)"/>
+      <rect x="-36" y="-24" width="72" height="10" rx="5" fill="#f7ca3e"/>
+      <circle cx="0" cy="-46" r="9" fill="#ffffff"/>
+      <!-- Signature Flower -->
+      <circle cx="24" cy="-26" r="7" fill="#ff66a3"/>
+      <circle cx="24" cy="-26" r="3" fill="#fff07c"/>
+      <!-- Galaxy Eyes & Smile -->
+      <circle cx="-13" cy="2" r="6.5" fill="#231026"/>
+      <circle cx="-15" cy="0" r="2.2" fill="#ffffff"/>
+      <circle cx="13" cy="2" r="6.5" fill="#231026"/>
+      <circle cx="11" cy="0" r="2.2" fill="#ffffff"/>
+      <ellipse cx="-23" cy="9" rx="6" ry="3.2" fill="#ff4d8d" opacity="0.45"/>
+      <ellipse cx="23" cy="9" rx="6" ry="3.2" fill="#ff4d8d" opacity="0.45"/>
+      <path d="M-6,10 Q0,17 6,10" fill="none" stroke="#3c132f" stroke-width="2.6" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <rect width="1480" height="980" fill="url(#bgBoard)"/>
+
+  <!-- Header Banner -->
+  <text x="740" y="46" text-anchor="middle" font-family="sans-serif" font-size="26" font-weight="800" fill="#3b1935">
+    SLIMI v0.4.0 — Premium UI/UX &amp; Complete 5-Screen Application Experience
+  </text>
+  <text x="740" y="74" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#7c4b70">
+    Unified Design System (Light Pearl &amp; Dark Velvet) • Arabic RTL &amp; English LTR • Unobstructed 3D Companion • 100% Real Controls
+  </text>
+
+  <!-- ==================== SCREEN 1: SPLASH & ONBOARDING ==================== -->
+  <g transform="translate(36, 102)" filter="url(#cardShadow)">
+    <rect width="264" height="410" rx="28" fill="url(#pastelSky)" stroke="#ffffff" stroke-width="3"/>
+    <use href="#slimiHero" x="132" y="102" transform="scale(0.95) translate(7, 6)"/>
+    <rect x="14" y="162" width="236" height="232" rx="20" fill="#fffafd" opacity="0.96" stroke="#f2c6df" stroke-width="1.5"/>
+    <!-- Step Dots + Skip -->
+    <rect x="28" y="178" width="22" height="6" rx="3" fill="#ed5398"/>
+    <rect x="54" y="178" width="9" height="6" rx="3" fill="#eccae0"/>
+    <rect x="67" y="178" width="9" height="6" rx="3" fill="#eccae0"/>
+    <rect x="184" y="172" width="54" height="20" rx="10" fill="#f9ecf4"/>
+    <text x="211" y="186" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#6f3c63">Skip</text>
+
+    <text x="132" y="212" text-anchor="middle" font-family="sans-serif" font-size="13.5" font-weight="800" fill="#3d1b36">Welcome to SLIMI ✨</text>
+    <rect x="28" y="224" width="100" height="26" rx="13" fill="#ed5398"/>
+    <text x="78" y="241" text-anchor="middle" font-family="sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">العربية (RTL)</text>
+    <rect x="136" y="224" width="100" height="26" rx="13" fill="#f7eef4" stroke="#ecc7de"/>
+    <text x="186" y="241" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#4a2342">English (LTR)</text>
+
+    <rect x="28" y="262" width="208" height="28" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="38" y="280" font-family="sans-serif" font-size="10" fill="#8b5c7e">SLIMI Name: سلايمي</text>
+    <rect x="28" y="298" width="208" height="28" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="38" y="316" font-family="sans-serif" font-size="10" fill="#8b5c7e">Your Nickname: صديقي</text>
+
+    <rect x="28" y="344" width="208" height="34" rx="14" fill="#ed5398"/>
+    <text x="132" y="365" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#ffffff">التالي • Next →</text>
+    <text x="132" y="432" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#4b2242">1. Fast Splash &amp; Skippable Onboarding</text>
+  </g>
+
+  <!-- ==================== SCREEN 2: HOME SCREEN (LIGHT PEARL RTL) ==================== -->
+  <g transform="translate(322, 102)" filter="url(#cardShadow)">
+    <rect width="264" height="410" rx="28" fill="url(#pastelSky)" stroke="#ffffff" stroke-width="3"/>
+    <!-- Top HUD -->
+    <rect x="14" y="16" width="136" height="40" rx="15" fill="#fffafd" opacity="0.90"/>
+    <text x="82" y="34" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="800" fill="#3d1b36">SLIMI</text>
+    <text x="82" y="48" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#ed5398">✨ سعيد ومبتهج</text>
+    <rect x="156" y="18" width="30" height="34" rx="11" fill="#fffafd" opacity="0.90"/>
+    <text x="171" y="39" text-anchor="middle" font-size="13">🌅</text>
+    <rect x="190" y="18" width="30" height="34" rx="11" fill="#fffafd" opacity="0.90"/>
+    <text x="205" y="39" text-anchor="middle" font-size="13">📊</text>
+    <rect x="224" y="18" width="26" height="34" rx="11" fill="#fffafd" opacity="0.90"/>
+    <text x="237" y="39" text-anchor="middle" font-size="12">⚙️</text>
+
+    <!-- Compact Status Card -->
+    <rect x="14" y="64" width="236" height="36" rx="14" fill="#fffafd" opacity="0.88"/>
+    <rect x="26" y="74" width="92" height="6" rx="3" fill="#ff7ab8"/>
+    <rect x="140" y="74" width="92" height="6" rx="3" fill="#4ad6ad"/>
+    <rect x="26" y="86" width="92" height="6" rx="3" fill="#ffb65c"/>
+    <rect x="140" y="86" width="92" height="6" rx="3" fill="#b485ff"/>
+
+    <!-- Center Stage Unobstructed SLIMI -->
+    <g transform="translate(132, 212) scale(1.28)">
+      <use href="#slimiHero"/>
+    </g>
+
+    <!-- Speech Bubble -->
+    <rect x="42" y="274" width="180" height="28" rx="14" fill="#ffffff"/>
+    <text x="132" y="292" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#3d1b36">أهلاً صديقي! المسني لنلعب معاً ✨</text>
+
+    <!-- Quick Care Dock -->
+    <rect x="14" y="310" width="236" height="38" rx="16" fill="#fffafd" opacity="0.90"/>
+    <text x="44" y="333" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#4a2342">🍓 إطعام</text>
+    <text x="102" y="333" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#4a2342">🎈 لعب</text>
+    <text x="158" y="333" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#4a2342">🌙 غفوة</text>
+    <text x="216" y="333" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#4a2342">👋 نداء</text>
+
+    <!-- 5-Tab Unified Bottom Nav -->
+    <rect x="14" y="356" width="236" height="42" rx="18" fill="#ffffff"/>
+    <rect x="20" y="362" width="46" height="30" rx="12" fill="#ed5398"/>
+    <text x="43" y="381" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#ffffff">الرئيسية</text>
+    <text x="90" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">المحادثة</text>
+    <text x="136" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الأنشطة</text>
+    <text x="182" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">التخصيص</text>
+    <text x="226" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الإعدادات</text>
+
+    <text x="132" y="432" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#4b2242">2. Home Screen &amp; 5-Tab Bottom Nav</text>
+  </g>
+
+  <!-- ==================== SCREEN 3: MODERN CHAT SCREEN ==================== -->
+  <g transform="translate(608, 102)" filter="url(#cardShadow)">
+    <rect width="264" height="410" rx="28" fill="url(#pastelSky)" stroke="#ffffff" stroke-width="3"/>
+    <g transform="translate(132, 92) scale(0.95)">
+      <use href="#slimiHero"/>
+    </g>
+    <!-- Lower Split Chat Sheet -->
+    <rect x="12" y="146" width="240" height="204" rx="20" fill="#fffafd" opacity="0.96"/>
+    <text x="132" y="168" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="800" fill="#3d1b36">محادثة ذكية مع SLIMI</text>
+    <!-- Quick Chips -->
+    <rect x="22" y="176" width="52" height="20" rx="10" fill="#f7eef4"/>
+    <text x="48" y="189" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#4b2242">😂 نكتة</text>
+    <rect x="78" y="176" width="52" height="20" rx="10" fill="#f7eef4"/>
+    <text x="104" y="189" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#4b2242">🧩 لغز</text>
+    <rect x="134" y="176" width="52" height="20" rx="10" fill="#f7eef4"/>
+    <text x="160" y="189" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#4b2242">📖 قصة</text>
+    <rect x="190" y="176" width="52" height="20" rx="10" fill="#f7eef4"/>
+    <text x="216" y="189" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#4b2242">🎭 مشهد</text>
+
+    <!-- User Bubble -->
+    <rect x="72" y="204" width="168" height="28" rx="12" fill="#ed5398"/>
+    <text x="156" y="222" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#ffffff">مرحباً يا سلايمي! احكِ لي نكتة 😊</text>
+
+    <!-- SLIMI Bubble -->
+    <rect x="22" y="240" width="184" height="44" rx="12" fill="#f9ebf5" stroke="#efc6e0"/>
+    <text x="114" y="256" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="#ed5398">SLIMI • مرح وضحك</text>
+    <text x="114" y="272" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#3d1b36">لماذا يحب الجلي القفز؟ لأنه مرن دائماً! 😂</text>
+
+    <!-- Input Bar (Mic + Input + Send) -->
+    <rect x="22" y="302" width="32" height="32" rx="10" fill="#f7eef4"/>
+    <text x="38" y="322" text-anchor="middle" font-size="13">🎙️</text>
+    <rect x="58" y="302" width="128" height="32" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="122" y="322" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#9a6b8c">اكتب رسالتك هنا...</text>
+    <rect x="190" y="302" width="52" height="32" rx="10" fill="#ed5398"/>
+    <text x="216" y="322" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#ffffff">إرسال</text>
+
+    <!-- Nav Bar (Chat Active) -->
+    <rect x="14" y="356" width="236" height="42" rx="18" fill="#ffffff"/>
+    <text x="43" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الرئيسية</text>
+    <rect x="67" y="362" width="46" height="30" rx="12" fill="#ed5398"/>
+    <text x="90" y="381" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#ffffff">المحادثة</text>
+    <text x="136" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الأنشطة</text>
+    <text x="182" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">التخصيص</text>
+    <text x="226" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الإعدادات</text>
+
+    <text x="132" y="432" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#4b2242">3. Non-Blocking Chat + Lip-Sync</text>
+  </g>
+
+  <!-- ==================== SCREEN 4: 3D CUSTOMIZATION STUDIO ==================== -->
+  <g transform="translate(894, 102)" filter="url(#cardShadow)">
+    <rect width="264" height="410" rx="28" fill="url(#pastelSky)" stroke="#ffffff" stroke-width="3"/>
+    <g transform="translate(132, 92) scale(1.0)">
+      <use href="#slimiHero"/>
+    </g>
+    <rect x="12" y="146" width="240" height="204" rx="20" fill="#fffafd" opacity="0.96"/>
+    <text x="132" y="168" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="800" fill="#3d1b36">تخصيص مظهر SLIMI (360°)</text>
+
+    <!-- Rotate Slider -->
+    <rect x="24" y="178" width="216" height="24" rx="10" fill="#f7eef4"/>
+    <text x="132" y="194" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#5e3153">↺  تدوير المعاينة ثلاثية الأبعاد 360°  ↻</text>
+
+    <!-- Gel Swatches -->
+    <circle cx="44" cy="222" r="12" fill="#ff7ab8" stroke="#ed5398" stroke-width="3"/>
+    <circle cx="80" cy="222" r="12" fill="#ff9f87"/>
+    <circle cx="116" cy="222" r="12" fill="#c39bff"/>
+    <circle cx="152" cy="222" r="12" fill="#7be8ca"/>
+    <circle cx="188" cy="222" r="12" fill="#ffd06b"/>
+
+    <!-- Accessory Toggles -->
+    <rect x="24" y="246" width="68" height="26" rx="13" fill="#ed5398"/>
+    <text x="58" y="263" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="#ffffff">✓ الزهرة</text>
+    <rect x="98" y="246" width="68" height="26" rx="13" fill="#ed5398"/>
+    <text x="132" y="263" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="#ffffff">✓ القلب</text>
+    <rect x="172" y="246" width="68" height="26" rx="13" fill="#ed5398"/>
+    <text x="206" y="263" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="#ffffff">✓ النجمة</text>
+
+    <!-- Restore vs Save -->
+    <rect x="24" y="300" width="102" height="34" rx="12" fill="#f7eef4" stroke="#ecc7de"/>
+    <text x="75" y="321" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#4b2242">استعادة الافتراضي</text>
+    <rect x="134" y="300" width="106" height="34" rx="12" fill="#ed5398"/>
+    <text x="187" y="321" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#ffffff">حفظ المظهر ✓</text>
+
+    <!-- Nav Bar (Customize Active) -->
+    <rect x="14" y="356" width="236" height="42" rx="18" fill="#ffffff"/>
+    <text x="43" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الرئيسية</text>
+    <text x="90" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">المحادثة</text>
+    <text x="136" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الأنشطة</text>
+    <rect x="159" y="362" width="46" height="30" rx="12" fill="#ed5398"/>
+    <text x="182" y="381" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#ffffff">التخصيص</text>
+    <text x="226" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5e3153">الإعدادات</text>
+
+    <text x="132" y="432" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#4b2242">4. 3D Turntable Customize Studio</text>
+  </g>
+
+  <!-- ==================== SCREEN 5: DARK VELVET MODE & 6-TAB SETTINGS ==================== -->
+  <g transform="translate(1180, 102)" filter="url(#cardShadow)">
+    <rect width="264" height="410" rx="28" fill="url(#starSky)" stroke="#7c63a8" stroke-width="3"/>
+    <g transform="translate(132, 92) scale(0.95)">
+      <use href="#slimiHero"/>
+    </g>
+    <rect x="12" y="146" width="240" height="204" rx="20" fill="#251a3b" opacity="0.96" stroke="#6c5299"/>
+    <text x="132" y="168" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="800" fill="#ffffff">الإعدادات الشاملة (6 أقسام)</text>
+
+    <!-- 6 Category Pills -->
+    <rect x="20" y="176" width="38" height="20" rx="10" fill="#2eb886"/>
+    <text x="39" y="189" text-anchor="middle" font-family="sans-serif" font-size="8" font-weight="700" fill="#ffffff">المظهر</text>
+    <rect x="61" y="176" width="34" height="20" rx="10" fill="#372854"/>
+    <text x="78" y="189" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#dfd2f2">الصوت</text>
+    <rect x="98" y="176" width="40" height="20" rx="10" fill="#372854"/>
+    <text x="118" y="189" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#dfd2f2">الشخصية</text>
+    <rect x="141" y="176" width="34" height="20" rx="10" fill="#372854"/>
+    <text x="158" y="189" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#dfd2f2">الذكاء</text>
+    <rect x="178" y="176" width="40" height="20" rx="10" fill="#372854"/>
+    <text x="198" y="189" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#dfd2f2">الخصوصية</text>
+    <rect x="221" y="176" width="26" height="20" rx="10" fill="#372854"/>
+    <text x="234" y="189" text-anchor="middle" font-family="sans-serif" font-size="7.5" fill="#dfd2f2">التطبيق</text>
+
+    <!-- Dark Mode & Quality Controls -->
+    <rect x="22" y="206" width="106" height="28" rx="12" fill="#372854"/>
+    <text x="75" y="224" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#dfd2f2">☀️ فاتح مشرق</text>
+    <rect x="136" y="206" width="106" height="28" rx="12" fill="#2eb886"/>
+    <text x="189" y="224" text-anchor="middle" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#ffffff">🌙 داكن مريح</text>
+
+    <rect x="22" y="244" width="220" height="28" rx="10" fill="#32234d"/>
+    <text x="132" y="262" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#ffffff">الرسوميات: منخفض • متوسط • عالٍ</text>
+
+    <rect x="22" y="280" width="220" height="28" rx="10" fill="#32234d"/>
+    <text x="132" y="298" text-anchor="middle" font-family="sans-serif" font-size="9.5" fill="#7be8ca">الوضع الافتراضي: محلي 100% (Offline)</text>
+
+    <rect x="22" y="314" width="220" height="24" rx="10" fill="#4c233c" stroke="#eb5270"/>
+    <text x="132" y="330" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="#ff8ea4">مسح الذاكرة / استعادة الإعدادات</text>
+
+    <!-- Nav Bar Dark -->
+    <rect x="14" y="356" width="236" height="42" rx="18" fill="#1e1530"/>
+    <text x="43" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#c7b5e3">الرئيسية</text>
+    <text x="90" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#c7b5e3">المحادثة</text>
+    <text x="136" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#c7b5e3">الأنشطة</text>
+    <text x="182" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#c7b5e3">التخصيص</text>
+    <rect x="202" y="362" width="44" height="30" rx="12" fill="#2eb886"/>
+    <text x="224" y="381" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="#ffffff">الإعدادات</text>
+
+    <text x="132" y="432" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#4b2242">5. Dark Velvet &amp; 6-Category Settings</text>
+  </g>
+
+  <!-- ==================== LOWER ROW: ACTIVITIES/GAMES, EXIT FLOW & ARCHITECTURE ==================== -->
+  <g transform="translate(36, 566)" filter="url(#cardShadow)">
+    <rect width="452" height="372" rx="26" fill="#ffffff" stroke="#f0cde2" stroke-width="2"/>
+    <text x="226" y="36" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="800" fill="#3d1b36">
+      6. Curated Activities &amp; 9 Playable Mini-Games (Zero Dummy Items)
+    </text>
+    <rect x="24" y="54" width="404" height="112" rx="16" fill="#fdf3f9" stroke="#f2c8e1"/>
+    <text x="226" y="76" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#ed5398">أنشطة تفاعلية حية مع SLIMI</text>
+    <rect x="38" y="88" width="118" height="30" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="97" y="107" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3d1b36">🎈 قفز ومرح</text>
+    <rect x="167" y="88" width="118" height="30" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="226" y="107" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3d1b36">🎵 رقص إيقاعي</text>
+    <rect x="296" y="88" width="118" height="30" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="355" y="107" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3d1b36">🧘 تمرين مرونة</text>
+    <rect x="38" y="126" width="118" height="30" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="97" y="145" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3d1b36">🌙 استرخاء وغفوة</text>
+    <rect x="167" y="126" width="118" height="30" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="226" y="145" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3d1b36">😂 نكتة سريعة</text>
+    <rect x="296" y="126" width="118" height="30" rx="10" fill="#ffffff" stroke="#ecc7de"/>
+    <text x="355" y="145" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3d1b36">🧩 لغز ذكي</text>
+
+    <rect x="24" y="180" width="404" height="170" rx="16" fill="#f6fbf9" stroke="#bce8d8"/>
+    <text x="226" y="204" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#218c68">ساحة الألعاب المصغرة التسع (9 Playable Mini-Games)</text>
+    <text x="226" y="232" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#3d1b36">تخمين الرقم • ذاكرة الحركات • تقليد المشاعر • رد الفعل السريع • الألغاز</text>
+    <text x="226" y="254" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#3d1b36">التصفيق الإيقاعي • صيد الفقاعات • صح أم خطأ • التحدي اليومي</text>
+    <rect x="52" y="276" width="164" height="38" rx="12" fill="#2eb886"/>
+    <text x="134" y="300" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#ffffff">ساحة لعب تفاعلية فورية</text>
+    <rect x="236" y="276" width="164" height="38" rx="12" fill="#ed5398"/>
+    <text x="318" y="300" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#ffffff">عداد انتصارات محفوظ 🏆</text>
+  </g>
+
+  <!-- Android Back & Clean Exit Card -->
+  <g transform="translate(514, 566)" filter="url(#cardShadow)">
+    <rect width="452" height="372" rx="26" fill="#ffffff" stroke="#f0cde2" stroke-width="2"/>
+    <text x="226" y="36" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="800" fill="#3d1b36">
+      7. Android Back Stack, Lifecycle &amp; Clean Exit Modal
+    </text>
+    <rect x="66" y="64" width="320" height="196" rx="22" fill="#fffafd" stroke="#ed5398" stroke-width="2"/>
+    <g transform="translate(226, 108) scale(0.55)">
+      <use href="#slimiHero"/>
+    </g>
+    <text x="226" y="154" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="800" fill="#3d1b36">هل تود مغادرة SLIMI الآن؟</text>
+    <text x="226" y="176" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#7c4b70">تم حفظ حالتك وإعداداتك بأمان تام على جهازك.</text>
+    <rect x="86" y="198" width="132" height="38" rx="12" fill="#fdecef" stroke="#e84868"/>
+    <text x="152" y="222" text-anchor="middle" font-family="sans-serif" font-size="11.5" font-weight="700" fill="#d93254">حفظ والخروج</text>
+    <rect x="234" y="198" width="132" height="38" rx="12" fill="#ed5398"/>
+    <text x="300" y="222" text-anchor="middle" font-family="sans-serif" font-size="11.5" font-weight="700" fill="#ffffff">متابعة اللعب</text>
+
+    <text x="226" y="294" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4b2242">• Sub-screen Back → Previous Screen / Home</text>
+    <text x="226" y="318" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4b2242">• Background Pause → Atomic Save + 10 FPS Throttle</text>
+    <text x="226" y="342" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4b2242">• Virtual Keyboard → Automatic Safe Bottom Inset Lift</text>
+  </g>
+
+  <!-- Performance & Compatibility Card -->
+  <g transform="translate(992, 566)" filter="url(#cardShadow)">
+    <rect width="452" height="372" rx="26" fill="#ffffff" stroke="#f0cde2" stroke-width="2"/>
+    <text x="226" y="36" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="800" fill="#3d1b36">
+      8. Android Compatibility &amp; Modular Architecture
+    </text>
+    <rect x="28" y="60" width="396" height="84" rx="16" fill="#f7f2ff" stroke="#d5c2fa"/>
+    <text x="226" y="86" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#5e38b8">Centralized Design Tokens &amp; Motion Engine</text>
+    <text x="226" y="108" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#3d1b36">SlimiDesignSystem • SlimiUIMotion • SlimiUIComponents</text>
+    <text x="226" y="128" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#6f4d8a">4 Accent Palettes • 3 Font Scales • Reduce Motion Toggle</text>
+
+    <rect x="28" y="158" width="396" height="92" rx="16" fill="#eefaf5" stroke="#b6e6d3"/>
+    <text x="226" y="184" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1d8562">Tested Portrait Resolutions &amp; GPU Tiers</text>
+    <text x="226" y="208" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#3d1b36">360×640 (Compact) • 720×1280 (HD) • 1080×2400 (20:9 Tall)</text>
+    <text x="226" y="230" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#3d1b36">Godot 4.7.2 gl_compatibility • Android 8.0+ (Min SDK 26)</text>
+
+    <rect x="28" y="264" width="396" height="84" rx="16" fill="#fff5fa" stroke="#f2c4de"/>
+    <text x="226" y="290" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#c73678">100% Signal-Driven Separation</text>
+    <text x="226" y="312" text-anchor="middle" font-family="sans-serif" font-size="11.5" fill="#3d1b36">UI Screens ↔ HUDController ↔ SlimiInteractionManager ↔ Slime3D</text>
+    <text x="226" y="332" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#7c4b70">Offline-First Free Local Mode Default • Zero Forced Cloud</text>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SoundBankConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/sound_bank_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+sample_rate = 22050
+pitch_variation = 0.09
+master_gain = 0.85
+enable_ambient_hum = true
