@@ -11,6 +11,7 @@ signal slime_part_interacted(part_id: StringName, world_pos: Vector3)
 @export var hop_vertical_speed: float = 4.35
 @export var hop_horizontal_speed: float = 2.35
 @export var turn_speed: float = 7.5
+var movement_speed_scale: float = 1.0
 
 var deformer: SlimeDeformer
 var face_rig: SlimeFaceRig
@@ -129,10 +130,10 @@ func hop_toward(target_world_pos: Vector3, power_scale: float = 1.0) -> bool:
 	var dir: Vector3 = flat_delta.normalized() if dist > 0.05 else Vector3.ZERO
 	var bounce_trait: float = mood_system.personality.bounciness if (mood_system != null and mood_system.personality != null) else 1.0
 
-	var horiz_speed: float = minf(dist * 2.4, hop_horizontal_speed) * clampf(power_scale, 0.45, 1.45)
+	var horiz_speed: float = minf(dist * 2.4, hop_horizontal_speed * movement_speed_scale) * clampf(power_scale, 0.45, 1.45)
 	velocity.x = dir.x * horiz_speed
 	velocity.z = dir.z * horiz_speed
-	velocity.y = hop_vertical_speed * clampf(power_scale, 0.55, 1.35) * bounce_trait
+	velocity.y = hop_vertical_speed * clampf(power_scale, 0.55, 1.35) * bounce_trait * lerpf(0.9, 1.1, (movement_speed_scale - 0.75) / 0.55)
 
 	look_target_world = Vector3(target_world_pos.x, global_position.y + 0.55, target_world_pos.z)
 

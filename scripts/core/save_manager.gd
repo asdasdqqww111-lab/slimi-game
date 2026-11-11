@@ -1,10 +1,12 @@
 extends Node
-## نظام الحفظ والاستعادة المحلي الذري (Atomic Local Save & Load) بدون الحاجة للإنترنت.
+## نظام الحفظ والاستعادة المحلي الذري (Atomic Local Save & Load) بدون الحاجة للإنترنت:
+## يدعم حفظ واستعادة حالة SLIMI، الذاكرة، الإعدادات، تفضيلات الواجهة، وتخصيص المظهر بأمان تام.
 
 signal game_saved(path: String)
 signal game_loaded(data: Dictionary)
+signal settings_reset
 
-const SCHEMA_VERSION: int = 1
+const SCHEMA_VERSION: int = 2
 const DEFAULT_SAVE_PATH: String = "user://slimi_save.json"
 const AUTOSAVE_INTERVAL_SEC: float = 30.0
 const MAX_OFFLINE_SECONDS: float = 43200.0 # 12 ساعة كحد أقصى لتأثير الغياب اللطيف
@@ -66,12 +68,35 @@ func create_default_data() -> Dictionary:
 			"quality_preset": 1,
 			"master_volume": 0.90,
 			"sfx_volume": 0.90,
+			"voice_volume": 0.92,
+			"expressive_sounds_enabled": true,
+			"master_muted": false,
 			"ambient_enabled": true,
 			"battery_saver": false,
 			"haptics_enabled": true,
 			"show_fps": false,
+			"splash_sound_enabled": true,
+			"care_notifications_enabled": true,
 			"locale": "ar",
-		}
+		},
+		"ui_preferences": {
+			"onboarding_completed": false,
+			"dark_mode": false,
+			"accent_palette": "sakura",
+			"text_scale_index": 1,
+			"reduce_motion": false,
+			"room_backdrop": "pastel_dream",
+			"retain_interaction_stats": true,
+		},
+		"customization": {
+			"slimi_name": "",
+			"gel_preset": "sakura_pink",
+			"beanie_preset": "sunny_yellow",
+			"show_flower": true,
+			"show_heart_pin": true,
+			"show_star_charm": true,
+			"movement_speed_scale": 1.0,
+		},
 	}
 
 
@@ -93,10 +118,42 @@ func update_section(section: String, values: Dictionary) -> void:
 
 
 func get_section(section: String) -> Dictionary:
+	var defaults: Dictionary = create_default_data()
+	var base_sec: Dictionary = {}
+	if defaults.has(section) and typeof(defaults[section]) == TYPE_DICTIONARY:
+		base_sec = (defaults[section] as Dictionary).duplicate(true)
 	var val: Variant = current_data.get(section, {})
 	if typeof(val) == TYPE_DICTIONARY:
-		return (val as Dictionary).duplicate(true)
-	return {}
+		for k in (val as Dictionary).keys():
+			base_sec[k] = val[k]
+	return base_sec
+
+
+func reset_settings_to_default() -> void:
+	var defaults: Dictionary = create_default_data()
+	var was_onboarded: bool = bool(get_section("ui_preferences").get("onboarding_completed", false))
+	current_data["settings"] = (defaults["settings"] as Dictionary).duplicate(true)
+	var ui_def: Dictionary = (defaults["ui_preferences"] as Dictionary).duplicate(true)
+	ui_def["onboarding_completed"] = was_onboarded
+	current_data["ui_preferences"] = ui_def
+	_dirty = true
+	save_to_disk()
+	settings_reset.emit()
+
+
+func clear_temp_cache() -> int:
+	var removed_files: int = 0
+	var dir := DirAccess.open("user://")
+	if dir != null:
+		dir.list_dir_begin()
+		var fname: String = dir.get_next()
+		while not fname.is_empty():
+			if not dir.current_is_dir() and (fname.ends_with(".tmp") or fname.ends_with(".cache")):
+				if dir.remove(fname) == OK:
+					removed_files += 1
+			fname = dir.get_next()
+		dir.list_dir_end()
+	return removed_files
 
 
 func save_to_disk(custom_path: String = "") -> bool:
@@ -127,7 +184,6 @@ func save_to_disk(custom_path: String = "") -> bool:
 		ProjectSettings.globalize_path(target)
 	)
 	if rename_err != OK:
-		# مسار بديل آمن إذا كان النظام يمنع الاستبدال المباشر
 		var direct := FileAccess.open(target, FileAccess.WRITE)
 		if direct == null:
 			return false
@@ -165,7 +221,6 @@ func load_from_disk(custom_path: String = "") -> bool:
 	var saved_ts: int = int(current_data.get("last_timestamp", now_ts))
 	last_offline_seconds = clampf(float(maxi(0, now_ts - saved_ts)), 0.0, MAX_OFFLINE_SECONDS)
 
-	# زيادة عدّاد الجلسات عند فتح اللعبة من ملف محفوظ
 	if custom_path.is_empty():
 		var mem: Dictionary = current_data.get("memory", {})
 		mem["sessions_count"] = int(mem.get("sessions_count", 1)) + 1

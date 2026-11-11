@@ -1,11 +1,12 @@
 extends Node
-## مدير تكامل نظام Android والأداء:
+## مدير تكامل نظام Android، دورة حياة التطبيق (الخلفية/المقدمة)، وSafe Areas والأداء:
 ## يستخدم عقدة Timer بدلاً من _process كل إطار لتوفير استهلاك المعالج،
-## ويضبط الحواف الآمنة (DisplayServer.get_display_safe_area) بدقة منطقية تناسب شاشة الهاتف.
+## ويخفّض معدل الإطارات والنشاط الصوتي تلقائياً عند انتقال التطبيق إلى الخلفية.
 
 signal back_requested
 signal safe_area_updated(margins: Dictionary)
 signal performance_updated(fps: float, frame_ms: float)
+signal app_lifecycle_changed(is_paused: bool)
 
 var haptics_enabled: bool = true
 var current_fps: float = 60.0
@@ -25,7 +26,6 @@ func _ready() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		get_tree().set_quit_on_go_back(false)
 
-	# استخدام Timer بدلاً من _process(delta) لفحص الأداء والحواف الآمنة كل 0.5 ثانية فقط
 	monitor_timer = Timer.new()
 	monitor_timer.name = "PerfSafeAreaTimer"
 	monitor_timer.wait_time = 0.5
@@ -52,13 +52,25 @@ func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_WM_GO_BACK_REQUEST:
 			back_requested.emit()
-		NOTIFICATION_APPLICATION_PAUSED:
-			is_app_paused = true
-			AudioServer.set_bus_mute(0, true)
-		NOTIFICATION_APPLICATION_RESUMED:
-			is_app_paused = false
-			var master_vol: float = float(SaveManager.get_section("settings").get("master_volume", 0.90))
-			AudioServer.set_bus_mute(0, master_vol <= 0.005)
+		NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT:
+			if not is_app_paused:
+				is_app_paused = true
+				AudioServer.set_bus_mute(0, true)
+				Engine.max_fps = 10 # خفض استهلاك البطارية في الخلفية
+				app_lifecycle_changed.emit(true)
+		NOTIFICATION_APPLICATION_RESUMED, NOTIFICATION_APPLICATION_FOCUS_IN:
+			if is_app_paused:
+				is_app_paused = false
+				var s: Dictionary = SaveManager.get_section("settings")
+				var master_vol: float = float(s.get("master_volume", 0.90))
+				var muted: bool = bool(s.get("master_muted", false))
+				AudioServer.set_bus_mute(0, muted or master_vol <= 0.005)
+				Engine.max_fps = 30 if bool(s.get("battery_saver", false)) else 60
+				app_lifecycle_changed.emit(false)
+
+
+func simulate_back_button() -> void:
+	back_requested.emit()
 
 
 func set_haptics_enabled(enabled: bool, persist: bool = true) -> void:
@@ -74,6 +86,21 @@ func trigger_haptic(duration_ms: int = 16) -> void:
 		Input.vibrate_handheld(clampi(duration_ms, 8, 60))
 
 
+func get_virtual_keyboard_bottom_inset() -> int:
+	if DisplayServer.get_name() == "headless":
+		return 0
+	if not DisplayServer.has_feature(DisplayServer.FEATURE_VIRTUAL_KEYBOARD):
+		return 0
+	var kb_px: int = DisplayServer.virtual_keyboard_get_height()
+	if kb_px <= 0:
+		return 0
+	var win_h: float = maxf(float(DisplayServer.window_get_size().y), 1.0)
+	var vp: Viewport = get_viewport()
+	var vis_h: float = vp.get_visible_rect().size.y if vp != null else 1280.0
+	var scale_y: float = maxf(win_h / maxf(vis_h, 1.0), 0.5)
+	return clampi(int(round(float(kb_px) / scale_y)), 0, 620)
+
+
 func get_safe_area_margins() -> Dictionary:
 	var base := {"left": 14, "top": 14, "right": 14, "bottom": 16}
 	if DisplayServer.get_name() == "headless":
@@ -84,7 +111,6 @@ func get_safe_area_margins() -> Dictionary:
 	if win_size.x <= 0 or win_size.y <= 0 or safe_rect.size.x <= 0 or safe_rect.size.y <= 0:
 		return base
 
-	# تحويل البكسلات الفيزيائية للشاشة إلى وحدات الواجهة المنطقية (canvas_items stretch)
 	var vp: Viewport = get_viewport()
 	var vis_size: Vector2 = vp.get_visible_rect().size if vp != null else Vector2(720.0, 1280.0)
 	var scale_x: float = maxf(float(win_size.x) / maxf(vis_size.x, 1.0), 0.5)

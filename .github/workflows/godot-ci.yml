@@ -41,7 +41,7 @@ jobs:
       - name: Verify Startup Scene Execution
         run: godot --headless --quit-after 30 --path .
 
-      - name: Run SLIMI Automated QA & Stress Test Suite (163 Tests)
+      - name: Run SLIMI Automated QA & UI/UX Redesign Test Suite
         run: godot --headless --path . res://tests/TestRunner.tscn
 
   render-cinematic-showcase:
@@ -103,6 +103,29 @@ jobs:
           cp /tmp/slimi_renders/slimi_view_*.png /tmp/slimi_renders/deliverables/
           cp /tmp/slimi_renders/slimi_preset_*.png /tmp/slimi_renders/deliverables/
           cp /tmp/slimi_renders/slimi_touch_dent_closeup.png /tmp/slimi_renders/deliverables/
+
+          # التقاط لقطات الشاشة التسع الفعلية لواجهة وتجربة SLIMI المحدّثة (OpenGL3 720x1280 Portrait)
+          mkdir -p /tmp/slimi_renders/ui_screens
+          xvfb-run -a -s "-screen 0 720x1280x24" \
+            godot --audio-driver Dummy --rendering-driver opengl3 --resolution 720x1280 \
+            --path . res://scenes/ui/SlimiUIUXShowcaseCapture.tscn -- --capture-ui=/tmp/slimi_renders/ui_screens
+
+          cp /tmp/slimi_renders/ui_screens/ui_*.png /tmp/slimi_renders/deliverables/
+
+          # تجميع لوحة العرض الشاملة للشاشات التسع (3x3 Portrait Grid)
+          ffmpeg -y \
+            -i /tmp/slimi_renders/ui_screens/ui_01_splash.png \
+            -i /tmp/slimi_renders/ui_screens/ui_02_onboarding.png \
+            -i /tmp/slimi_renders/ui_screens/ui_03_home_rtl_light.png \
+            -i /tmp/slimi_renders/ui_screens/ui_04_home_dark_mode.png \
+            -i /tmp/slimi_renders/ui_screens/ui_05_chat_screen.png \
+            -i /tmp/slimi_renders/ui_screens/ui_06_activities_games.png \
+            -i /tmp/slimi_renders/ui_screens/ui_07_customize_360.png \
+            -i /tmp/slimi_renders/ui_screens/ui_08_settings_6tabs.png \
+            -i /tmp/slimi_renders/ui_screens/ui_09_exit_modal.png \
+            -filter_complex "[0:v]scale=360:640[u0];[1:v]scale=360:640[u1];[2:v]scale=360:640[u2];[3:v]scale=360:640[u3];[4:v]scale=360:640[u4];[5:v]scale=360:640[u5];[6:v]scale=360:640[u6];[7:v]scale=360:640[u7];[8:v]scale=360:640[u8];[u0][u1][u2][u3][u4][u5][u6][u7][u8]xstack=inputs=9:layout=0_0|w0_0|w0+w1_0|0_h0|w0_h0|w0+w1_h0|0_h0+h3|w0_h0+h3|w0+w1_h0+h3[uout]" \
+            -map "[uout]" /tmp/slimi_renders/deliverables/slimi_ui_ux_9_screens_grid.png
+
           ls -lh /tmp/slimi_renders/deliverables/
 
       - name: Upload Multi-Angle Renders & Motion Video Artifact
